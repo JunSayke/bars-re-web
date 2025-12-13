@@ -1,0 +1,9 @@
+.next
+node_modules
+dist
+coverage
+.env
+.env.local
+next.config.ts
+tailwind.config.ts
+postcss.config.mjs
