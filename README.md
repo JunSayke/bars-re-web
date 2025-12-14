@@ -2,14 +2,14 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, run the development server (this project prefers `pnpm` — see "Switching to pnpm" below):
 
 ```bash
+pnpm dev
+# or
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
 # or
 bun dev
 ```
@@ -21,7 +21,29 @@ Components follow Atomic Design under `src/components`:
 - `molecules/` — composed components (FormField, PasswordField, SocialButton)
 - `organisms/` — composed layouts (AuthForm, AuthAside)
 
-Run `npm run dev` and visit `/login` to see the new auth layout.
+Run `pnpm dev` and visit `/login` to see the new auth layout.
+
+Switching to pnpm
+-----------------
+
+This repository prefers `pnpm`. To switch locally:
+
+1. Install pnpm (via Corepack or npm):
+
+```bash
+corepack prepare pnpm@8 --activate
+# or
+npm i -g pnpm
+```
+
+2. Remove the npm lockfile (if present) and install with pnpm:
+
+```bash
+git rm --cached package-lock.json || true
+pnpm install
+```
+
+This will create `pnpm-lock.yaml` and use pnpm's node_modules layout.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
