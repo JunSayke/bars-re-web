@@ -14,7 +14,14 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Auth pages are available at `/login` and `/signup` (they live under the `(auth)` route group).
+
+Components follow Atomic Design under `src/components`:
+- `atoms/` — building blocks (Logo, Icon, Button, Input, Label, Divider)
+- `molecules/` — composed components (FormField, PasswordField, SocialButton)
+- `organisms/` — composed layouts (AuthForm, AuthAside)
+
+Run `npm run dev` and visit `/login` to see the new auth layout.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
