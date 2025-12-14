@@ -36,37 +36,28 @@ export default function LyricsPanel() {
   ]);
 
   const [focusTarget, setFocusTarget] = useState<{ sectionId: string; lineId: string } | null>(null);
-  const [nextLine, setNextLine] = useState<Record<string, string>>(() => Object.fromEntries(sections.map(s => [s.id, ""])));
-  const [focusNextLineId, setFocusNextLineId] = useState<string | null>(null);
+  // Ensure each section always has at least one trailing empty line
+  function normalizeSections(secs: Section[]) {
+    return secs.map((s) => {
+      const copy = { ...s, lines: [...s.lines] };
+      if (copy.lines.length === 0 || copy.lines[copy.lines.length - 1].lyric !== "") {
+        copy.lines.push(newLine());
+      }
+      return copy;
+    });
+  }
 
+  // Ensure initial sections have a trailing empty line
   React.useEffect(() => {
-    if (!focusNextLineId) return;
-    // delay focusing to allow DOM to settle after insertion
-    // retry focusing multiple times to reliably override browser focus moves
-    let attempts = 0;
-    const iv = setInterval(() => {
-      attempts += 1;
-      const el = document.querySelector<HTMLInputElement>(`input[data-nextline-id="${focusNextLineId}"]`);
-      // If a newly created lyric input grabbed focus, blur it first
-      const active = document.activeElement as HTMLElement | null;
-      if (active && active.tagName === "INPUT" && active.getAttribute("placeholder") === "Write lyrics...") {
-        (active as HTMLInputElement).blur();
-      }
-      if (el) {
-        el.focus();
-      }
-      if (el || attempts > 20) {
-        clearInterval(iv);
-        setFocusNextLineId(null);
-      }
-    }, 100);
-    return () => clearInterval(iv);
-  }, [focusNextLineId]);
+    setSections((s) => normalizeSections(s));
+    // run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function updateLine(sectionIdx: number, lineIdx: number, state: Line) {
     const next = [...sections];
     next[sectionIdx].lines[lineIdx] = state;
-    setSections(next);
+    setSections(normalizeSections(next));
   }
 
   function insertLineAfter(sectionIdx: number, lineIdx: number) {
@@ -74,8 +65,13 @@ export default function LyricsPanel() {
     const id = genId();
     const newL = { ...newLine(), id };
     next[sectionIdx].lines.splice(lineIdx + 1, 0, newL);
-    setSections(next);
-    setFocusTarget({ sectionId: next[sectionIdx].id, lineId: id });
+    setSections(normalizeSections(next));
+    // delay focusing to allow the DOM and placeholder mapping to settle
+    setTimeout(() => {
+      const secAfter = (sections[sectionIdx] || next[sectionIdx]);
+      const last = secAfter?.lines[secAfter.lines.length - 1];
+      if (last) setFocusTarget({ sectionId: next[sectionIdx].id, lineId: last.id });
+    }, 40);
   }
 
   function deleteLine(sectionIdx: number, lineIdx: number): { sectionId: string; lineId: string } | null {
@@ -100,7 +96,7 @@ export default function LyricsPanel() {
       if (targetLine) focus = { sectionId: sec.id, lineId: targetLine.id };
     }
 
-    setSections(next);
+    setSections(normalizeSections(next));
     return focus;
   }
 
@@ -108,8 +104,7 @@ export default function LyricsPanel() {
     const next = [...sections];
     const id = genId();
     next.push({ id, name: "Verse", scheme: "AAAA", lines: [newLine()] });
-    setSections(next);
-    setNextLine((s) => ({ ...s, [id]: "" }));
+    setSections(normalizeSections(next));
     setFocusTarget({ sectionId: id, lineId: next[next.length - 1].lines[0].id });
   }
 
@@ -131,6 +126,7 @@ export default function LyricsPanel() {
                 lyric={l.lyric}
                 syllables={l.syllables}
                 count={l.syllables.reduce((s, x) => s + x.value, 0)}
+                placeholder={idx === sec.lines.length - 1 ? "Type next line..." : undefined}
                 autoFocus={!!(focusTarget && focusTarget.sectionId === sec.id && focusTarget.lineId === l.id)}
                 suppressFocus={l.skipFocus}
                 onChange={(s) => updateLine(sIdx, idx, { ...l, time: s.time, lyric: s.lyric, syllables: s.syllables })}
@@ -146,77 +142,9 @@ export default function LyricsPanel() {
               />
             ))}
 
-            <div className="relative flex gap-4 p-3 pr-4 rounded-xl transition-all group/line opacity-50 hover:opacity-100">
-              <div className="pt-2 shrink-0">
-                <div className="relative">
-                  <input className="w-12 bg-transparent text-[#a492c9]/40 text-xs font-mono text-right border-none p-0.5" disabled type="text" value="00:23" />
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <input
-                  className="w-full bg-transparent text-white/50 text-lg font-medium border-none focus:ring-0 p-0 italic"
-                  placeholder="Type next line..."
-                  type="text"
-                  value={nextLine[sec.id] ?? ""}
-                  onChange={(e) => setNextLine((s) => ({ ...s, [sec.id]: e.target.value }))}
-                  onKeyDown={(e) => {
-                    const key = e.key;
-                    if (key === "Enter") {
-                      e.preventDefault();
-                      const text = (nextLine[sec.id] ?? "").trim();
-                      const id = genId();
-                      const newL: Line = { id, time: "00:00", lyric: text, syllables: [], skipFocus: true };
-                      const next = [...sections];
-                      next[sIdx].lines.push(newL);
-                      setSections(next);
-                      setNextLine((s) => ({ ...s, [sec.id]: "" }));
-                      // temporarily make the inserted lyric not focusable by disabling it and then re-enable
-                      setTimeout(() => {
-                        setSections((prev) => {
-                          const copy = [...prev];
-                          const sec2 = copy[sIdx];
-                          if (!sec2) return prev;
-                          const ln = sec2.lines.find((x) => x.id === id);
-                          if (ln) {
-                            ln.skipFocus = false;
-                          }
-                          return copy;
-                        });
-                      }, 150);
-                      setFocusNextLineId(sec.id);
-                    }
-                    if (key === "Backspace") {
-                      // if the next-line input is empty, move focus to previous line
-                      if (!(nextLine[sec.id] ?? "")) {
-                        const lastIdx = sec.lines.length - 1;
-                        // blur this input first so the target can receive focus
-                        try {
-                          (e.target as HTMLInputElement).blur();
-                        } catch {}
-                        if (lastIdx >= 0) {
-                          const prev = { sectionId: sec.id, lineId: sec.lines[lastIdx].id };
-                          // delay focusing slightly to allow DOM to settle and override browser defaults
-                          setTimeout(() => setFocusTarget(prev), 40);
-                        } else {
-                          // no lines in this section; try previous section's last line
-                          const prevSec = sections[sIdx - 1];
-                          if (prevSec && prevSec.lines.length > 0) {
-                            const prev = { sectionId: prevSec.id, lineId: prevSec.lines[prevSec.lines.length - 1].id };
-                            setTimeout(() => setFocusTarget(prev), 40);
-                          }
-                        }
-                        // prevent default backspace behavior
-                        e.preventDefault();
-                      }
-                    }
-                  }}
-                  data-nextline-id={sec.id}
-                  aria-label="Type next line..."
-                />
-              </div>
+            {/* trailing input removed: sections now always include a trailing empty LyricLine */}
             </div>
           </div>
-        </div>
       ))}
 
       <div className="mt-12 flex justify-center pb-8">

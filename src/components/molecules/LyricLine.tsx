@@ -17,12 +17,13 @@ type Props = {
   rhyme?: string;
   autoFocus?: boolean;
   suppressFocus?: boolean;
+  placeholder?: string;
   onChange?: (state: { time: string; lyric: string; syllables: Syllable[] }) => void;
   onEnter?: () => void;
   onBackspaceEmpty?: () => void;
 };
 
-export default function LyricLine({ time = "00:00", lyric = "", syllables = [], count = 0, rhyme = "A", autoFocus = false, suppressFocus = false, onChange, onEnter, onBackspaceEmpty }: Props) {
+export default function LyricLine({ time = "00:00", lyric = "", syllables = [], count = 0, rhyme = "A", autoFocus = false, suppressFocus = false, placeholder, onChange, onEnter, onBackspaceEmpty }: Props) {
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -37,7 +38,7 @@ export default function LyricLine({ time = "00:00", lyric = "", syllables = [], 
     <div className="relative flex gap-4 p-3 pr-4 rounded-xl hover:bg-surface-lighter/20 transition-all group/line border border-transparent hover:border-white/5">
       <TimestampInput value={time} onChange={(t) => onChange?.({ time: t, lyric, syllables })} />
       <div className="flex-1 min-w-0 flex flex-col gap-2">
-        <LyricInput value={lyric} onChange={(v) => onChange?.({ time, lyric: v, syllables })} onKeyDown={handleKeyDown} autoFocus={autoFocus} disabled={suppressFocus} />
+        <LyricInput placeholder={placeholder} value={lyric} onChange={(v) => onChange?.({ time, lyric: v, syllables })} onKeyDown={handleKeyDown} autoFocus={autoFocus} disabled={suppressFocus} />
         <div className="flex flex-wrap items-center gap-2 opacity-60 group-hover/line:opacity-100 transition-opacity">
           {syllables.map((s, i) => (
             <SyllableTag key={i} text={s.text} value={s.value} onChange={(n) => {
