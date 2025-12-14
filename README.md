@@ -1,90 +1,36 @@
-# BARS Frontend
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Next.js frontend with shadcn/ui components, Tailwind CSS, and API integration.
+## Getting Started
 
-## Features
-
-- ✅ Next.js 15 with App Router
-- ✅ shadcn/ui components
-- ✅ Tailwind CSS 4
-- ✅ TypeScript
-- ✅ Authentication context
-- ✅ Axios API client with interceptors
-- ✅ Protected routes
-- ✅ Responsive design
-
-## Prerequisites
-
-- Node.js 18+
-- pnpm 9+
-
-## Environment Variables
-
-Create `.env` file:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3001
-```
-
-## Installation
+First, run the development server:
 
 ```bash
-pnpm install
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## Running the Application
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### Development
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-```bash
-pnpm dev:web
-```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-The app will be available at `http://localhost:3000`
+## Learn More
 
-### Build
+To learn more about Next.js, take a look at the following resources:
 
-```bash
-pnpm build:web
-```
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-### Production
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-```bash
-pnpm start
-```
+## Deploy on Vercel
 
-## Project Structure
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-```
-src/
-├── app/                  # Pages and layouts
-├── components/           # Reusable UI components
-├── contexts/             # React contexts (Auth, etc.)
-├── hooks/                # Custom React hooks
-├── lib/                  # Utilities and API client
-└── globals.css           # Global styles
-```
-
-## Pages
-
-- `/` - Home page
-- `/login` - Login page
-- `/register` - Registration page
-- `/dashboard` - Protected dashboard (requires authentication)
-
-## Authentication
-
-The app uses JWT tokens stored in localStorage. The auth context handles:
-- User login
-- User registration
-- Token refresh on requests
-- Logout
-- Protected route navigation
-
-## API Integration
-
-The Axios client is configured to:
-- Auto-attach JWT tokens to all requests
-- Redirect to login on 401 responses
-- Handle errors gracefully
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
