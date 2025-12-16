@@ -1,6 +1,5 @@
 import React from "react";
 import ForgotForm from "@/components/organisms/ForgotForm";
-import Link from "next/link";
 
 export default function ForgotPage() {
   return (
