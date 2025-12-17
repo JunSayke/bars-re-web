@@ -5,12 +5,6 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -42,6 +36,12 @@ body {
   color: white;
 }
 
+/* Hide the native focus outline on inline toggle buttons when the wrapper handles focus */
+.input-with-toggle button:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 /* Scrollbar styles */
 ::-webkit-scrollbar {
   width: 6px;
@@ -56,3 +56,29 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #5b13ec;
 }
+
+/* Editor specific styles */
+.editor-line {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.25rem 0;
+  position: relative;
+}
+
+.editable-text {
+  outline: none;
+  min-height: 1.5em;
+  font-size: 1rem;
+}
+
+[contenteditable]:empty:before {
+  content: attr(data-placeholder);
+  color: #64748b;
+  cursor: text;
+}
+
+.dark [contenteditable]:empty:before {
+  color: #475569;
+}
+

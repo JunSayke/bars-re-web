@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import Button from "../atoms/Button";
 import Logo from "../atoms/logo";
@@ -9,19 +10,113 @@ import PasswordField from "../molecules/PasswordField";
 import Divider from "../atoms/Divider";
 import SocialButton from "../molecules/SocialButton";
 
+import { useAuthControllerRegister, useAuthControllerLogin } from "@/queries/api/barsApiComponents";
+
 export const AuthForm: React.FC<{ variant?: "login" | "signup"; fullLayout?: boolean }> = ({ variant = "login", fullLayout = false }) => {
   const isLogin = variant === "login";
   const [message, setMessage] = useState<string | null>(null);
+  const [messageKind, setMessageKind] = useState<'info'|'success'|'error'>('info');
   const messageId = "auth-message";
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const registerMutation = useAuthControllerRegister({
+    onSuccess: () => {
+      setMessageKind('success');
+      setMessage('Account created — redirecting...');
+      setTimeout(() => router.push('/login'), 800);
+    },
+    onError: (err: unknown) => {
+      const raw = (err as Error)?.message ?? 'Registration failed';
+      let friendly = raw;
+      try {
+        // try to parse JSON body produced by fetcher
+        // Use a dotall-compatible pattern without the /s flag for older TS targets
+        const match = /\{[\s\S]*\}$/.exec(raw);
+        if (match) {
+          const parsed = JSON.parse(match[0]);
+          if (parsed && parsed.message) {
+            friendly = Array.isArray(parsed.message) ? parsed.message.join('; ') : parsed.message;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+      setMessageKind('error');
+      setMessage(friendly);
+    }
+  });
+
+  const loginMutation = useAuthControllerLogin({
+    onSuccess: () => {
+      setMessageKind('success');
+      setMessage('Logged in — redirecting...');
+      setTimeout(() => router.push('/editor/workspace'), 400);
+    },
+    onError: (err: unknown) => {
+      const msg = (err as Error)?.message ?? 'Login failed';
+      setMessageKind('error');
+      setMessage(msg);
+    }
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const usernameEl = document.getElementById('username') as HTMLInputElement | null;
     const emailEl = document.getElementById('email') as HTMLInputElement | null;
     const pwdEl = document.getElementById('password') as HTMLInputElement | null;
+    const confirmEl = document.getElementById('confirm') as HTMLInputElement | null;
+    const termsEl = document.getElementById('terms') as HTMLInputElement | null;
+
+    const username = usernameEl?.value ?? '';
     const email = emailEl?.value ?? '';
     const pwd = pwdEl?.value ?? '';
-    setMessage(`Submitted: ${email} • ${pwd ? '••••' : '(no password)'}`);
-    setTimeout(() => setMessage(null), 3000);
+    const confirm = confirmEl?.value ?? '';
+    const accepted = !!termsEl?.checked;
+
+    setMessage(null);
+    setMessageKind('info');
+
+    if (isLogin) {
+      if (!email || !pwd) {
+        setMessageKind('error');
+        setMessage('Please enter email and password');
+        return;
+      }
+      // call login mutation
+      loginMutation.mutate({ body: { email, password: pwd } });
+      return;
+    }
+
+    // Signup validations
+    if (!username || !email || !pwd || !confirm) {
+      setMessageKind('error');
+      setMessage('Please fill in all fields');
+      return;
+    }
+    if (username.length < 3) {
+      setMessageKind('error');
+      setMessage('Username must be at least 3 characters');
+      return;
+    }
+    if (pwd.length < 8) {
+      setMessageKind('error');
+      setMessage('Password must be at least 8 characters');
+      return;
+    }
+    if (pwd !== confirm) {
+      setMessageKind('error');
+      setMessage('Passwords do not match');
+      return;
+    }
+    if (!accepted) {
+      setMessageKind('error');
+      setMessage('You must accept the terms to continue');
+      return;
+    }
+
+    // Call registration mutation
+    registerMutation.mutate({ body: { username, email, password: pwd } });
   };
 
   const inner = (
@@ -62,7 +157,15 @@ export const AuthForm: React.FC<{ variant?: "login" | "signup"; fullLayout?: boo
                 </div>
               )}
 
-              <Button variant="purple" type="submit" className="mt-2 w-full rounded-lg" size="lg">{isLogin ? "Log In" : "Sign Up"}</Button>
+              <Button
+                variant="purple"
+                type="submit"
+                className="mt-2 w-full rounded-lg"
+                size="lg"
+                disabled={isLogin ? loginMutation.isLoading : registerMutation.isLoading}
+              >
+                {isLogin ? (loginMutation.isLoading ? 'Logging in…' : 'Log In') : (registerMutation.isLoading ? 'Signing up…' : 'Sign Up')}
+              </Button>
             </form>
 
             <div className="pb-6">
@@ -77,7 +180,9 @@ export const AuthForm: React.FC<{ variant?: "login" | "signup"; fullLayout?: boo
 
       <div aria-live="polite" id={messageId} className="mt-4">
         {message ? (
-          <div className="rounded-md bg-green-100 px-4 py-2 text-sm text-green-800">{message}</div>
+          <div className={`rounded-md px-4 py-2 text-sm ${messageKind === 'success' ? 'bg-green-100 text-green-800' : messageKind === 'error' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+            {message}
+          </div>
         ) : null}
       </div>
       <div className="mt-auto pt-8">

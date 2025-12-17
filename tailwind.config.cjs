@@ -10,6 +10,10 @@ module.exports = {
         'purple-400': '#8b5cf6',
         'background-light': '#f6f6f8',
         'background-dark': '#161022',
+        'surface-dark': '#221933',
+        'border-dark': '#2f2348',
+        'input-border': '#443267',
+        'text-secondary': '#a492c9',
       },
       fontFamily: {
         display: ['var(--font-display)', 'sans-serif'],
