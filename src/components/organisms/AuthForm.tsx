@@ -53,13 +53,8 @@ export const AuthForm: React.FC<{ variant?: "login" | "signup"; fullLayout?: boo
         return;
       }
 
-      // Treat 405 (misconfigured backend / method not allowed) like a server error so UI shows a generic server message
-      if (status === 405) {
-        setConnectionError('Server error. Please try again later.');
-        return;
-      }
-
-      if (status && status >= 500) {
+      // Treat 405 (misconfigured backend / method not allowed) and 5xx errors as server errors
+      if (status === 405 || (status && status >= 500)) {
         setConnectionError('Server error. Please try again later.');
         return;
       }
@@ -88,8 +83,8 @@ clearErrors();
       // structured response from barsApiFetch: check status/body
       const status = (err as any)?.status as number | undefined;
 
-      // Treat 405 (misconfigured backend / method not allowed) like a server error so UI shows a generic server message
-      if (status === 405) {
+      // Treat 405 (misconfigured backend / method not allowed) and 5xx errors as server errors so UI shows a generic server message
+      if (status === 405 || (status && status >= 500)) {
         setConnectionError('Server error. Please try again later.');
         return;
       }
@@ -98,11 +93,6 @@ clearErrors();
       if (status && (status === 401 || (status >= 400 && status < 500))) {
         setError('password', { type: 'server', message: 'Invalid email or password.' });
         setFocus('password' as any);
-        return;
-      }
-
-      if (status && status >= 500) {
-        setConnectionError('Server error. Please try again later.');
         return;
       }
 
