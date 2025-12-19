@@ -21,7 +21,7 @@ export type AppControllerGetHelloResponse = {
   pagination?: Schemas.PaginationInfoDto;
   sorting?: Schemas.SortingInfoDto;
   filtering?: Schemas.FilteringInfoDto;
-  data: Record<string, any>;
+  data: never;
 };
 
 export type AppControllerGetHelloVariables = BarsApiContext["fetcherOptions"];
@@ -116,55 +116,37 @@ export const useAppControllerGetHealth = (
   );
 };
 
+export type AuthControllerRegisterResponse = {
+  success: boolean;
+  /*
+   * @default false
+   */
+  isArray: boolean;
+  isPaginated?: boolean;
+  isSorted?: boolean;
+  isFiltered?: boolean;
+  message?: string;
+  pagination?: Schemas.PaginationInfoDto;
+  sorting?: Schemas.SortingInfoDto;
+  filtering?: Schemas.FilteringInfoDto;
+  data: Schemas.AuthResponseDto;
+};
+
 export type AuthControllerRegisterVariables = {
-  body?: Schemas.RegisterDto;
+  body: Schemas.RegisterDto;
 } & BarsApiContext["fetcherOptions"];
 
 export const fetchAuthControllerRegister = (
   variables: AuthControllerRegisterVariables
 ) =>
-  barsApiFetch<
-    | {
-        success: boolean;
-        /*
-         * @default false
-         */
-        isArray: boolean;
-        isPaginated?: boolean;
-        isSorted?: boolean;
-        isFiltered?: boolean;
-        message?: string;
-        pagination?: Schemas.PaginationInfoDto;
-        sorting?: Schemas.SortingInfoDto;
-        filtering?: Schemas.FilteringInfoDto;
-        data: Record<string, any>;
-      }
-    | Schemas.AuthResponseDto,
-    Schemas.RegisterDto,
-    {},
-    {},
-    {}
-  >({ url: "/api/auth/register", method: "post", ...variables });
+  barsApiFetch<AuthControllerRegisterResponse, Schemas.RegisterDto, {}, {}, {}>(
+    { url: "/api/auth/register", method: "post", ...variables }
+  );
 
 export const useAuthControllerRegister = (
   options?: Omit<
     reactQuery.UseMutationOptions<
-      | {
-          success: boolean;
-          /*
-           * @default false
-           */
-          isArray: boolean;
-          isPaginated?: boolean;
-          isSorted?: boolean;
-          isFiltered?: boolean;
-          message?: string;
-          pagination?: Schemas.PaginationInfoDto;
-          sorting?: Schemas.SortingInfoDto;
-          filtering?: Schemas.FilteringInfoDto;
-          data: Record<string, any>;
-        }
-      | Schemas.AuthResponseDto,
+      AuthControllerRegisterResponse,
       undefined,
       AuthControllerRegisterVariables
     >,
@@ -173,22 +155,7 @@ export const useAuthControllerRegister = (
 ) => {
   const { fetcherOptions } = useBarsApiContext();
   return reactQuery.useMutation<
-    | {
-        success: boolean;
-        /*
-         * @default false
-         */
-        isArray: boolean;
-        isPaginated?: boolean;
-        isSorted?: boolean;
-        isFiltered?: boolean;
-        message?: string;
-        pagination?: Schemas.PaginationInfoDto;
-        sorting?: Schemas.SortingInfoDto;
-        filtering?: Schemas.FilteringInfoDto;
-        data: Record<string, any>;
-      }
-    | Schemas.AuthResponseDto,
+    AuthControllerRegisterResponse,
     undefined,
     AuthControllerRegisterVariables
   >(
@@ -211,11 +178,11 @@ export type AuthControllerLoginResponse = {
   pagination?: Schemas.PaginationInfoDto;
   sorting?: Schemas.SortingInfoDto;
   filtering?: Schemas.FilteringInfoDto;
-  data: Record<string, any>;
+  data: Schemas.AuthResponseDto;
 };
 
 export type AuthControllerLoginVariables = {
-  body?: Schemas.LoginDto;
+  body: Schemas.LoginDto;
 } & BarsApiContext["fetcherOptions"];
 
 export const fetchAuthControllerLogin = (
@@ -249,6 +216,123 @@ export const useAuthControllerLogin = (
   );
 };
 
+export type AuthControllerRefreshHeaders = {
+  /*
+   * Optional: Authorization header in the form "Bearer <refresh-token>"
+   *
+   * @example Bearer refresh-token-example
+   */
+  Authorization?: string;
+  /*
+   * Refresh token (alternative to cookie). Example: refresh-token value
+   *
+   * @example refresh-token-example
+   */
+  ["x-refresh-token"]?: string;
+};
+
+export type AuthControllerRefreshResponse = {
+  success: boolean;
+  /*
+   * @default false
+   */
+  isArray: boolean;
+  isPaginated?: boolean;
+  isSorted?: boolean;
+  isFiltered?: boolean;
+  message?: string;
+  pagination?: Schemas.PaginationInfoDto;
+  sorting?: Schemas.SortingInfoDto;
+  filtering?: Schemas.FilteringInfoDto;
+  data: Schemas.AuthResponseDto;
+};
+
+export type AuthControllerRefreshVariables = {
+  headers?: AuthControllerRefreshHeaders;
+} & BarsApiContext["fetcherOptions"];
+
+export const fetchAuthControllerRefresh = (
+  variables: AuthControllerRefreshVariables
+) =>
+  barsApiFetch<
+    AuthControllerRefreshResponse,
+    undefined,
+    AuthControllerRefreshHeaders,
+    {},
+    {}
+  >({ url: "/api/auth/refresh", method: "post", ...variables });
+
+export const useAuthControllerRefresh = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      AuthControllerRefreshResponse,
+      undefined,
+      AuthControllerRefreshVariables
+    >,
+    "mutationFn"
+  >
+) => {
+  const { fetcherOptions } = useBarsApiContext();
+  return reactQuery.useMutation<
+    AuthControllerRefreshResponse,
+    undefined,
+    AuthControllerRefreshVariables
+  >(
+    (variables: AuthControllerRefreshVariables) =>
+      fetchAuthControllerRefresh({ ...fetcherOptions, ...variables }),
+    options
+  );
+};
+
+export type AuthControllerLogoutResponse = {
+  success: boolean;
+  /*
+   * @default false
+   */
+  isArray: boolean;
+  isPaginated?: boolean;
+  isSorted?: boolean;
+  isFiltered?: boolean;
+  message?: string;
+  pagination?: Schemas.PaginationInfoDto;
+  sorting?: Schemas.SortingInfoDto;
+  filtering?: Schemas.FilteringInfoDto;
+  data: Record<string, any>;
+};
+
+export type AuthControllerLogoutVariables = BarsApiContext["fetcherOptions"];
+
+export const fetchAuthControllerLogout = (
+  variables: AuthControllerLogoutVariables
+) =>
+  barsApiFetch<AuthControllerLogoutResponse, undefined, {}, {}, {}>({
+    url: "/api/auth/logout",
+    method: "post",
+    ...variables,
+  });
+
+export const useAuthControllerLogout = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      AuthControllerLogoutResponse,
+      undefined,
+      AuthControllerLogoutVariables
+    >,
+    "mutationFn"
+  >
+) => {
+  const { fetcherOptions } = useBarsApiContext();
+  return reactQuery.useMutation<
+    AuthControllerLogoutResponse,
+    undefined,
+    AuthControllerLogoutVariables
+  >(
+    (variables: AuthControllerLogoutVariables) =>
+      fetchAuthControllerLogout({ ...fetcherOptions, ...variables }),
+    options
+  );
+};
+
 export type AuthControllerChangePasswordResponse = {
   success: boolean;
   /*
@@ -266,7 +350,7 @@ export type AuthControllerChangePasswordResponse = {
 };
 
 export type AuthControllerChangePasswordVariables = {
-  body?: Schemas.ChangePasswordDto;
+  body: Schemas.ChangePasswordDto;
 } & BarsApiContext["fetcherOptions"];
 
 export const fetchAuthControllerChangePassword = (
@@ -319,7 +403,7 @@ export type AuthControllerForgotPasswordResponse = {
 };
 
 export type AuthControllerForgotPasswordVariables = {
-  body?: Schemas.ForgotPasswordDto;
+  body: Schemas.ForgotPasswordDto;
 } & BarsApiContext["fetcherOptions"];
 
 export const fetchAuthControllerForgotPassword = (
@@ -372,7 +456,7 @@ export type AuthControllerResetPasswordResponse = {
 };
 
 export type AuthControllerResetPasswordVariables = {
-  body?: Schemas.ResetPasswordDto;
+  body: Schemas.ResetPasswordDto;
 } & BarsApiContext["fetcherOptions"];
 
 export const fetchAuthControllerResetPassword = (
@@ -657,7 +741,7 @@ export type UsersControllerGetUserByIdResponse = {
   pagination?: Schemas.PaginationInfoDto;
   sorting?: Schemas.SortingInfoDto;
   filtering?: Schemas.FilteringInfoDto;
-  data: Record<string, any>;
+  data: Schemas.UserDto;
 };
 
 export type UsersControllerGetUserByIdVariables = {
@@ -1075,6 +1159,22 @@ export type ThesaurusControllerSearchQueryParams = {
   limit: string;
 };
 
+export type ThesaurusControllerSearchResponse = {
+  success: boolean;
+  /*
+   * @default false
+   */
+  isArray: boolean;
+  isPaginated?: boolean;
+  isSorted?: boolean;
+  isFiltered?: boolean;
+  message?: string;
+  pagination?: Schemas.PaginationInfoDto;
+  sorting?: Schemas.SortingInfoDto;
+  filtering?: Schemas.FilteringInfoDto;
+  data: never;
+};
+
 export type ThesaurusControllerSearchVariables = {
   queryParams: ThesaurusControllerSearchQueryParams;
 } & BarsApiContext["fetcherOptions"];
@@ -1083,7 +1183,7 @@ export const fetchThesaurusControllerSearch = (
   variables: ThesaurusControllerSearchVariables
 ) =>
   barsApiFetch<
-    undefined,
+    ThesaurusControllerSearchResponse,
     undefined,
     {},
     ThesaurusControllerSearchQueryParams,
@@ -1094,12 +1194,20 @@ export const useThesaurusControllerSearch = (
   queryKey: reactQuery.QueryKey,
   variables: ThesaurusControllerSearchVariables,
   options?: Omit<
-    reactQuery.UseQueryOptions<undefined, undefined, undefined>,
+    reactQuery.UseQueryOptions<
+      ThesaurusControllerSearchResponse,
+      undefined,
+      ThesaurusControllerSearchResponse
+    >,
     "queryKey" | "queryFn"
   >
 ) => {
   const { fetcherOptions, queryOptions, queryKeyFn } = useBarsApiContext();
-  return reactQuery.useQuery<undefined, undefined, undefined>(
+  return reactQuery.useQuery<
+    ThesaurusControllerSearchResponse,
+    undefined,
+    ThesaurusControllerSearchResponse
+  >(
     queryKeyFn(queryKey),
     () => fetchThesaurusControllerSearch({ ...fetcherOptions, ...variables }),
     {
@@ -1113,6 +1221,22 @@ export type ThesaurusControllerDetailsPathParams = {
   word: string;
 };
 
+export type ThesaurusControllerDetailsResponse = {
+  success: boolean;
+  /*
+   * @default false
+   */
+  isArray: boolean;
+  isPaginated?: boolean;
+  isSorted?: boolean;
+  isFiltered?: boolean;
+  message?: string;
+  pagination?: Schemas.PaginationInfoDto;
+  sorting?: Schemas.SortingInfoDto;
+  filtering?: Schemas.FilteringInfoDto;
+  data: never;
+};
+
 export type ThesaurusControllerDetailsVariables = {
   pathParams: ThesaurusControllerDetailsPathParams;
 } & BarsApiContext["fetcherOptions"];
@@ -1121,7 +1245,7 @@ export const fetchThesaurusControllerDetails = (
   variables: ThesaurusControllerDetailsVariables
 ) =>
   barsApiFetch<
-    undefined,
+    ThesaurusControllerDetailsResponse,
     undefined,
     {},
     {},
@@ -1132,12 +1256,20 @@ export const useThesaurusControllerDetails = (
   queryKey: reactQuery.QueryKey,
   variables: ThesaurusControllerDetailsVariables,
   options?: Omit<
-    reactQuery.UseQueryOptions<undefined, undefined, undefined>,
+    reactQuery.UseQueryOptions<
+      ThesaurusControllerDetailsResponse,
+      undefined,
+      ThesaurusControllerDetailsResponse
+    >,
     "queryKey" | "queryFn"
   >
 ) => {
   const { fetcherOptions, queryOptions, queryKeyFn } = useBarsApiContext();
-  return reactQuery.useQuery<undefined, undefined, undefined>(
+  return reactQuery.useQuery<
+    ThesaurusControllerDetailsResponse,
+    undefined,
+    ThesaurusControllerDetailsResponse
+  >(
     queryKeyFn(queryKey),
     () => fetchThesaurusControllerDetails({ ...fetcherOptions, ...variables }),
     {
@@ -1158,6 +1290,22 @@ export type ThesaurusControllerRhymesQueryParams = {
   randomness: string;
 };
 
+export type ThesaurusControllerRhymesResponse = {
+  success: boolean;
+  /*
+   * @default false
+   */
+  isArray: boolean;
+  isPaginated?: boolean;
+  isSorted?: boolean;
+  isFiltered?: boolean;
+  message?: string;
+  pagination?: Schemas.PaginationInfoDto;
+  sorting?: Schemas.SortingInfoDto;
+  filtering?: Schemas.FilteringInfoDto;
+  data: never;
+};
+
 export type ThesaurusControllerRhymesVariables = {
   pathParams: ThesaurusControllerRhymesPathParams;
   queryParams: ThesaurusControllerRhymesQueryParams;
@@ -1167,7 +1315,7 @@ export const fetchThesaurusControllerRhymes = (
   variables: ThesaurusControllerRhymesVariables
 ) =>
   barsApiFetch<
-    undefined,
+    ThesaurusControllerRhymesResponse,
     undefined,
     {},
     ThesaurusControllerRhymesQueryParams,
@@ -1182,12 +1330,20 @@ export const useThesaurusControllerRhymes = (
   queryKey: reactQuery.QueryKey,
   variables: ThesaurusControllerRhymesVariables,
   options?: Omit<
-    reactQuery.UseQueryOptions<undefined, undefined, undefined>,
+    reactQuery.UseQueryOptions<
+      ThesaurusControllerRhymesResponse,
+      undefined,
+      ThesaurusControllerRhymesResponse
+    >,
     "queryKey" | "queryFn"
   >
 ) => {
   const { fetcherOptions, queryOptions, queryKeyFn } = useBarsApiContext();
-  return reactQuery.useQuery<undefined, undefined, undefined>(
+  return reactQuery.useQuery<
+    ThesaurusControllerRhymesResponse,
+    undefined,
+    ThesaurusControllerRhymesResponse
+  >(
     queryKeyFn(queryKey),
     () => fetchThesaurusControllerRhymes({ ...fetcherOptions, ...variables }),
     {
@@ -1205,6 +1361,22 @@ export type ThesaurusControllerRelatedQueryParams = {
   group: string;
 };
 
+export type ThesaurusControllerRelatedResponse = {
+  success: boolean;
+  /*
+   * @default false
+   */
+  isArray: boolean;
+  isPaginated?: boolean;
+  isSorted?: boolean;
+  isFiltered?: boolean;
+  message?: string;
+  pagination?: Schemas.PaginationInfoDto;
+  sorting?: Schemas.SortingInfoDto;
+  filtering?: Schemas.FilteringInfoDto;
+  data: never;
+};
+
 export type ThesaurusControllerRelatedVariables = {
   pathParams: ThesaurusControllerRelatedPathParams;
   queryParams: ThesaurusControllerRelatedQueryParams;
@@ -1214,7 +1386,7 @@ export const fetchThesaurusControllerRelated = (
   variables: ThesaurusControllerRelatedVariables
 ) =>
   barsApiFetch<
-    undefined,
+    ThesaurusControllerRelatedResponse,
     undefined,
     {},
     ThesaurusControllerRelatedQueryParams,
@@ -1229,12 +1401,20 @@ export const useThesaurusControllerRelated = (
   queryKey: reactQuery.QueryKey,
   variables: ThesaurusControllerRelatedVariables,
   options?: Omit<
-    reactQuery.UseQueryOptions<undefined, undefined, undefined>,
+    reactQuery.UseQueryOptions<
+      ThesaurusControllerRelatedResponse,
+      undefined,
+      ThesaurusControllerRelatedResponse
+    >,
     "queryKey" | "queryFn"
   >
 ) => {
   const { fetcherOptions, queryOptions, queryKeyFn } = useBarsApiContext();
-  return reactQuery.useQuery<undefined, undefined, undefined>(
+  return reactQuery.useQuery<
+    ThesaurusControllerRelatedResponse,
+    undefined,
+    ThesaurusControllerRelatedResponse
+  >(
     queryKeyFn(queryKey),
     () => fetchThesaurusControllerRelated({ ...fetcherOptions, ...variables }),
     {
@@ -1251,6 +1431,22 @@ export type ThesaurusControllerWordplayPathParams = {
   word: string;
 };
 
+export type ThesaurusControllerWordplayResponse = {
+  success: boolean;
+  /*
+   * @default false
+   */
+  isArray: boolean;
+  isPaginated?: boolean;
+  isSorted?: boolean;
+  isFiltered?: boolean;
+  message?: string;
+  pagination?: Schemas.PaginationInfoDto;
+  sorting?: Schemas.SortingInfoDto;
+  filtering?: Schemas.FilteringInfoDto;
+  data: never;
+};
+
 export type ThesaurusControllerWordplayVariables = {
   body?: Schemas.GenerateWordplayDto;
   pathParams: ThesaurusControllerWordplayPathParams;
@@ -1260,7 +1456,7 @@ export const fetchThesaurusControllerWordplay = (
   variables: ThesaurusControllerWordplayVariables
 ) =>
   barsApiFetch<
-    undefined,
+    ThesaurusControllerWordplayResponse,
     Schemas.GenerateWordplayDto,
     {},
     {},
@@ -1274,7 +1470,7 @@ export const fetchThesaurusControllerWordplay = (
 export const useThesaurusControllerWordplay = (
   options?: Omit<
     reactQuery.UseMutationOptions<
-      undefined,
+      ThesaurusControllerWordplayResponse,
       undefined,
       ThesaurusControllerWordplayVariables
     >,
@@ -1283,7 +1479,7 @@ export const useThesaurusControllerWordplay = (
 ) => {
   const { fetcherOptions } = useBarsApiContext();
   return reactQuery.useMutation<
-    undefined,
+    ThesaurusControllerWordplayResponse,
     undefined,
     ThesaurusControllerWordplayVariables
   >(
@@ -1335,6 +1531,22 @@ export const useThesaurusControllerExamples = (
   );
 };
 
+export type RapControllerGenerateResponse = {
+  success: boolean;
+  /*
+   * @default false
+   */
+  isArray: boolean;
+  isPaginated?: boolean;
+  isSorted?: boolean;
+  isFiltered?: boolean;
+  message?: string;
+  pagination?: Schemas.PaginationInfoDto;
+  sorting?: Schemas.SortingInfoDto;
+  filtering?: Schemas.FilteringInfoDto;
+  data: never;
+};
+
 export type RapControllerGenerateVariables = {
   body: Schemas.GenerateRapDto;
 } & BarsApiContext["fetcherOptions"];
@@ -1342,16 +1554,18 @@ export type RapControllerGenerateVariables = {
 export const fetchRapControllerGenerate = (
   variables: RapControllerGenerateVariables
 ) =>
-  barsApiFetch<undefined, Schemas.GenerateRapDto, {}, {}, {}>({
-    url: "/api/api/v1/sonauto/rap/generate",
-    method: "post",
-    ...variables,
-  });
+  barsApiFetch<
+    RapControllerGenerateResponse,
+    Schemas.GenerateRapDto,
+    {},
+    {},
+    {}
+  >({ url: "/api/api/v1/sonauto/rap/generate", method: "post", ...variables });
 
 export const useRapControllerGenerate = (
   options?: Omit<
     reactQuery.UseMutationOptions<
-      undefined,
+      RapControllerGenerateResponse,
       undefined,
       RapControllerGenerateVariables
     >,
@@ -1360,7 +1574,7 @@ export const useRapControllerGenerate = (
 ) => {
   const { fetcherOptions } = useBarsApiContext();
   return reactQuery.useMutation<
-    undefined,
+    RapControllerGenerateResponse,
     undefined,
     RapControllerGenerateVariables
   >(
@@ -1370,6 +1584,22 @@ export const useRapControllerGenerate = (
   );
 };
 
+export type RapControllerGenerateAndWaitResponse = {
+  success: boolean;
+  /*
+   * @default false
+   */
+  isArray: boolean;
+  isPaginated?: boolean;
+  isSorted?: boolean;
+  isFiltered?: boolean;
+  message?: string;
+  pagination?: Schemas.PaginationInfoDto;
+  sorting?: Schemas.SortingInfoDto;
+  filtering?: Schemas.FilteringInfoDto;
+  data: never;
+};
+
 export type RapControllerGenerateAndWaitVariables = {
   body: Schemas.GenerateRapDto;
 } & BarsApiContext["fetcherOptions"];
@@ -1377,7 +1607,13 @@ export type RapControllerGenerateAndWaitVariables = {
 export const fetchRapControllerGenerateAndWait = (
   variables: RapControllerGenerateAndWaitVariables
 ) =>
-  barsApiFetch<undefined, Schemas.GenerateRapDto, {}, {}, {}>({
+  barsApiFetch<
+    RapControllerGenerateAndWaitResponse,
+    Schemas.GenerateRapDto,
+    {},
+    {},
+    {}
+  >({
     url: "/api/api/v1/sonauto/rap/generate_and_wait",
     method: "post",
     ...variables,
@@ -1386,7 +1622,7 @@ export const fetchRapControllerGenerateAndWait = (
 export const useRapControllerGenerateAndWait = (
   options?: Omit<
     reactQuery.UseMutationOptions<
-      undefined,
+      RapControllerGenerateAndWaitResponse,
       undefined,
       RapControllerGenerateAndWaitVariables
     >,
@@ -1395,7 +1631,7 @@ export const useRapControllerGenerateAndWait = (
 ) => {
   const { fetcherOptions } = useBarsApiContext();
   return reactQuery.useMutation<
-    undefined,
+    RapControllerGenerateAndWaitResponse,
     undefined,
     RapControllerGenerateAndWaitVariables
   >(
@@ -1409,6 +1645,22 @@ export type RapControllerStatusPathParams = {
   taskId: string;
 };
 
+export type RapControllerStatusResponse = {
+  success: boolean;
+  /*
+   * @default false
+   */
+  isArray: boolean;
+  isPaginated?: boolean;
+  isSorted?: boolean;
+  isFiltered?: boolean;
+  message?: string;
+  pagination?: Schemas.PaginationInfoDto;
+  sorting?: Schemas.SortingInfoDto;
+  filtering?: Schemas.FilteringInfoDto;
+  data: never;
+};
+
 export type RapControllerStatusVariables = {
   pathParams: RapControllerStatusPathParams;
 } & BarsApiContext["fetcherOptions"];
@@ -1416,7 +1668,13 @@ export type RapControllerStatusVariables = {
 export const fetchRapControllerStatus = (
   variables: RapControllerStatusVariables
 ) =>
-  barsApiFetch<undefined, undefined, {}, {}, RapControllerStatusPathParams>({
+  barsApiFetch<
+    RapControllerStatusResponse,
+    undefined,
+    {},
+    {},
+    RapControllerStatusPathParams
+  >({
     url: "/api/api/v1/sonauto/rap/status/{taskId}",
     method: "get",
     ...variables,
@@ -1426,12 +1684,20 @@ export const useRapControllerStatus = (
   queryKey: reactQuery.QueryKey,
   variables: RapControllerStatusVariables,
   options?: Omit<
-    reactQuery.UseQueryOptions<undefined, undefined, undefined>,
+    reactQuery.UseQueryOptions<
+      RapControllerStatusResponse,
+      undefined,
+      RapControllerStatusResponse
+    >,
     "queryKey" | "queryFn"
   >
 ) => {
   const { fetcherOptions, queryOptions, queryKeyFn } = useBarsApiContext();
-  return reactQuery.useQuery<undefined, undefined, undefined>(
+  return reactQuery.useQuery<
+    RapControllerStatusResponse,
+    undefined,
+    RapControllerStatusResponse
+  >(
     queryKeyFn(queryKey),
     () => fetchRapControllerStatus({ ...fetcherOptions, ...variables }),
     {
@@ -1442,6 +1708,9 @@ export const useRapControllerStatus = (
 };
 
 export type RapControllerStreamEventsQueryParams = {
+  /*
+   * Task id to subscribe to
+   */
   taskId: string;
 };
 

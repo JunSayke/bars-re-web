@@ -62,9 +62,23 @@ export const EditorLine: React.FC<EditorLineProps> = ({
     setTimeout(handleInput, 0);
   };
 
+  const { showTimestamps, showSyllables } = (() => {
+    try {
+      // lazy import to keep component SSR-safe when context isn't available
+      const mod = require("@/contexts/settings");
+      return mod.useSettings() as ReturnType<typeof mod.useSettings>;
+    } catch (e) {
+      return { showTimestamps: true, showSyllables: true } as const;
+    }
+  })();
+
   return (
     <div className={`editor-line ${className}`}>
-      <div className="text-xs text-slate-400 font-mono w-12 text-right opacity-40 select-none pt-1">{time}</div>
+      {showTimestamps ? (
+        <div className="text-xs text-slate-400 font-mono w-12 text-right opacity-40 select-none pt-1">{time}</div>
+      ) : (
+        <div className="w-12" />
+      )}
 
       <div className="flex-1">
         <div
@@ -89,11 +103,13 @@ export const EditorLine: React.FC<EditorLineProps> = ({
 
         {/* small circular syllable pill aligned with line */}
         {/* align pill vertically with timestamp (use same top offset) */}
-        <div className="absolute right-0 top-1">
-          <div className="flex items-center justify-center h-5 w-5 rounded-full bg-[#0f1720]/60 text-[11px] font-medium text-slate-200 select-none border border-slate-700" title="Syllables">
-            {typeof syllables === "number" ? syllables : "--"}
+        {showSyllables ? (
+          <div className="absolute right-0 top-1">
+            <div className="flex items-center justify-center h-5 w-5 rounded-full bg-[#0f1720]/60 text-[11px] font-medium text-slate-200 select-none border border-slate-700" title="Syllables">
+              {typeof syllables === "number" ? syllables : "--"}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </div>
   );

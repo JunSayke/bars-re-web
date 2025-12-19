@@ -41,17 +41,91 @@ export type StandardResponseDto = {
   data: Record<string, any>;
 };
 
-export type RegisterDto = {};
+export type AuthResponseDto = {
+  /*
+   * @example user_abc123
+   */
+  id: string;
+  /*
+   * @example alice@example.com
+   */
+  email: string;
+  /*
+   * @example alice
+   */
+  username: string;
+  /*
+   * @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+   */
+  token: string;
+  /*
+   * Refresh token is also set in cookie; included here for convenience
+   *
+   * @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+   */
+  refreshToken?: string;
+};
 
-export type AuthResponseDto = {};
+export type RegisterDto = {
+  /*
+   * @example alice@example.com
+   */
+  email: string;
+  /*
+   * @example alice
+   */
+  username: string;
+  /*
+   * @example SecretPass123
+   */
+  password: string;
+};
 
-export type LoginDto = {};
+export type LoginDto = {
+  /*
+   * @example alice@example.com
+   */
+  email: string;
+  /*
+   * @example SecretPass123
+   */
+  password: string;
+};
 
-export type ChangePasswordDto = {};
+export type ChangePasswordDto = {
+  /*
+   * @example OldPassword123
+   */
+  current_password: string;
+  /*
+   * @example NewPassword123
+   */
+  new_password: string;
+};
 
-export type ForgotPasswordDto = {};
+export type ForgotPasswordDto = {
+  /*
+   * @example alice@example.com
+   */
+  email: string;
+};
 
-export type ResetPasswordDto = {};
+export type ResetPasswordDto = {
+  /*
+   * @example f1e2d3c4b5a6...
+   */
+  token: string;
+  /*
+   * @example NewPassword123
+   */
+  new_password: string;
+};
+
+export type UserDto = {
+  id: string;
+  email: string;
+  username: string;
+};
 
 export type GenerateWordplayDto = {
   /*
@@ -71,7 +145,7 @@ export type GenerateWordplayDto = {
    *
    * @example Metaphor
    */
-  figurativeStyle?: "Metaphor" | "Simile" | "Personification";
+  figurative_style?: "Metaphor" | "Simile" | "Personification";
   /*
    * Preferred length of each generated item
    *
@@ -89,7 +163,14 @@ export type GenerateWordplayDto = {
    *
    * @example AABB
    */
-  rhymeScheme?: "AABB" | "ABAB" | "ABBA" | "AAAA" | "Couplet" | "Free" | "None";
+  rhyme_scheme?:
+    | "AABB"
+    | "ABAB"
+    | "ABBA"
+    | "AAAA"
+    | "Couplet"
+    | "Free"
+    | "None";
 };
 
 export type GenerateRapDto = {

@@ -4,7 +4,7 @@ export const AuthAside: React.FC<{ variant?: 'default' | 'signup' }> = ({ varian
   return (
     <div className="relative hidden w-0 flex-1 lg:block bg-[#0f0b18]">
       <div className="absolute inset-0 h-full w-full overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#1b1026_0%,_transparent_40%),linear-gradient(90deg,#0f0b18,rgba(11,6,26,0.6))] opacity-95"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,#1b1026_0%,transparent_40%),linear-gradient(90deg,#0f0b18,rgba(11,6,26,0.6))] opacity-95"></div>
         <div className="absolute inset-0 bg-linear-to-t from-[#161022] via-[#5b13ec]/20 to-[#161022]/40 mix-blend-multiply pointer-events-none"></div>
         <div className="absolute inset-0 bg-linear-to-r from-[#161022] via-transparent to-transparent pointer-events-none"></div>
         <div className="absolute top-1/4 right-1/4 h-64 w-64 rounded-full bg-primary/30 blur-[100px]"></div>
@@ -33,7 +33,7 @@ export const AuthAside: React.FC<{ variant?: 'default' | 'signup' }> = ({ varian
                 <img src="/avatars/a1.svg" alt="Artist avatar" className="inline-block h-10 w-10 rounded-full ring-2 ring-[#0f0713] border-2 border-transparent object-cover" />
                 <img src="/avatars/a2.svg" alt="Artist avatar" className="inline-block h-10 w-10 rounded-full ring-2 ring-[#0f0713] border-2 border-transparent object-cover" />
                 <img src="/avatars/a3.svg" alt="Artist avatar" className="inline-block h-10 w-10 rounded-full ring-2 ring-[#0f0713] border-2 border-transparent object-cover" />
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#0f0713] bg-gradient-to-br from-[#6b21a8] to-[#5b13ec] text-xs font-bold text-white -ml-2 z-10 shadow-lg">+2k</div>
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#0f0713] bg-linear-to-br from-[#6b21a8] to-[#5b13ec] text-xs font-bold text-white -ml-2 z-10 shadow-lg">+2k</div>
               </div>
               <p className="text-sm font-medium">Join 2,000+ Bisaya artists today.</p>
             </div>

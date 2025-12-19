@@ -3,6 +3,9 @@ import { Geist, Geist_Mono, Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 
 import ReactQueryProvider from "@/components/ReactQueryProvider";
+import { ToastProvider } from "@/contexts/toast";
+import ToastContainer from "@/components/organisms/ToastContainer";
+import { SettingsProvider } from "@/contexts/settings";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,9 +44,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${beVietnam.variable} antialiased dark`}
       >
         {/* React Query provider (client) */}
-        {/* The provider is a client component; it's safe to render from the root Server Component */}
+        {/* Wrapped with ToastProvider so any component can call useToast() */}
         <ReactQueryProvider>
-          {children}
+          <ToastProvider>
+            <SettingsProvider>
+              <ToastContainer />
+              {children}
+            </SettingsProvider>
+          </ToastProvider>
         </ReactQueryProvider>
       </body>
     </html>
