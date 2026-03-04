@@ -1,84 +1,12 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
+@theme inline {}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+:root {}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-display, Arial), Arial, Helvetica, sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  body {
-    background: radial-gradient(1200px 600px at 80% 20%, rgba(91,19,236,0.08), transparent 20%), linear-gradient(180deg,#0b0612,#10051a);
-  }
-}
-
-/* Also support explicit .dark class on the root/body so the app shows dark mode when class is present */
-.dark body {
-  background: radial-gradient(1200px 600px at 80% 20%, rgba(91,19,236,0.08), transparent 20%), linear-gradient(180deg,#0b0612,#10051a);
-}
-
-/* Custom selection */
-::selection {
-  background: #5b13ec;
-  color: white;
-}
-
-/* Hide the native focus outline on inline toggle buttons when the wrapper handles focus */
-.input-with-toggle button:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-/* Scrollbar styles */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #161022;
-}
-::-webkit-scrollbar-thumb {
-  background: #2f2348;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #5b13ec;
-}
-
-/* Editor specific styles */
-.editor-line {
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
-  padding: 0.25rem 0;
-  position: relative;
-}
-
-.editable-text {
-  outline: none;
-  min-height: 1.5em;
-  font-size: 1rem;
-}
-
-[contenteditable]:empty:before {
-  content: attr(data-placeholder);
-  color: #64748b;
-  cursor: text;
-}
-
-.dark [contenteditable]:empty:before {
-  color: #475569;
-}
+@layer base {}
 

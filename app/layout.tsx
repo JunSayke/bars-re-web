@@ -2,11 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 
-import ReactQueryProvider from "@/components/ReactQueryProvider";
-import { ToastProvider } from "@/contexts/toast";
-import ToastContainer from "@/components/organisms/ToastContainer";
-import { SettingsProvider } from "@/contexts/settings";
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -43,16 +38,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${beVietnam.variable} antialiased dark`}
       >
-        {/* React Query provider (client) */}
-        {/* Wrapped with ToastProvider so any component can call useToast() */}
-        <ReactQueryProvider>
-          <ToastProvider>
-            <SettingsProvider>
-              <ToastContainer />
               {children}
-            </SettingsProvider>
-          </ToastProvider>
-        </ReactQueryProvider>
       </body>
     </html>
   );
