@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Logo } from "@/components/atoms/logo";
 
 export const metadata = {
   title: "Bisaya AI Rap System - Welcome",
@@ -12,7 +11,7 @@ export default function Home() {
 
       <header className="relative z-10 flex items-center justify-between px-6 py-6 md:px-12 w-full max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
-          <Logo size={36} />
+          {/* Logo component can be added here if available, otherwise just a placeholder text */}
         </div>
 
         <nav className="hidden md:flex items-center gap-6">

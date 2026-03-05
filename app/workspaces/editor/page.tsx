@@ -1,4 +1,3 @@
-import RichTextEditor from "@/modules/editor-workspace/presentation/components/organisms/RichTextEditor";
 
 export const metadata = {
   title: "Workspace - Bisaya AI Rap System",
@@ -6,6 +5,6 @@ export const metadata = {
 
 export default function EditorWorkspacePage() {
   return (
-    <RichTextEditor />
+    <div>Workspace Editor Page</div>
   );
 }
