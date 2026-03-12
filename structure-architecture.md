@@ -1,6 +1,6 @@
 # Structure & Architecture — Bisaya AI Rap (Frontend)
 
-> **Stack:** Next.js 16 (App Router) · React 19 · TypeScript 5 · Tailwind CSS 4 · shadcn/ui (new-york) · Radix UI · TanStack Query v5 · React Hook Form · Zod · Lucide React · pnpm
+> **Stack:** Next.js 16 (App Router) · React 19 · TypeScript 5 · Tailwind CSS 4 · shadcn/ui (new-york) · Radix UI · TanStack Query v5 · React Hook Form · Zod · Lucide React · MSW · pnpm
 >
 > **Pattern:** Vertical Slice (modular) + Atomic Design · Next.js is a **pure frontend** — all data lives in the NestJS backend.
 >
@@ -20,13 +20,14 @@
 6. [Module Grouping — When a Module Gets Too Large](#6-module-grouping--when-a-module-gets-too-large)
 7. [App Router — Thin Routing Layer](#7-app-router--thin-routing-layer)
 8. [Data Fetching Contract](#8-data-fetching-contract)
-9. [Shared Layer](#9-shared-layer)
-10. [Import & Barrel Rules](#10-import--barrel-rules)
-11. [Git Flow + Worktree Strategy](#11-git-flow--worktree-strategy)
-12. [LLM Prompt Convention](#12-llm-prompt-convention)
-13. [Naming Conventions Cheatsheet](#13-naming-conventions-cheatsheet)
-14. [Forbidden Patterns](#14-forbidden-patterns)
-15. [Decision Tree — Where Does This File Go?](#15-decision-tree--where-does-this-file-go)
+9. [Mock API & Mock Data](#9-mock-api--mock-data)
+10. [Shared Layer](#10-shared-layer)
+11. [Import & Barrel Rules](#11-import--barrel-rules)
+12. [Git Flow + Worktree Strategy](#12-git-flow--worktree-strategy)
+13. [LLM Prompt Convention](#13-llm-prompt-convention)
+14. [Naming Conventions Cheatsheet](#14-naming-conventions-cheatsheet)
+15. [Forbidden Patterns](#15-forbidden-patterns)
+16. [Decision Tree — Where Does This File Go?](#16-decision-tree--where-does-this-file-go)
 
 ---
 
@@ -85,8 +86,11 @@ web/
 ├── src/
 │   ├── modules/                      # Vertical slices — ALL feature logic
 │   │   ├── auth/
+│   │   │   └── mocks/                # Auth mock handlers + fixtures (dev only)
 │   │   ├── settings/
+│   │   │   └── mocks/
 │   │   └── workspace/                # May be a module GROUP (see §6)
+│   │       └── mocks/
 │   │
 │   ├── components/                   # Shared atomic design (presentational only)
 │   │   ├── atoms/
@@ -101,7 +105,8 @@ web/
 │       ├── hooks/
 │       ├── types/
 │       ├── constants/
-│       └── config/
+│       ├── config/
+│       └── mocks/                    # MSW setup — aggregates all module handlers
 │
 ├── public/
 ├── components.json                   # shadcn/ui config
@@ -143,6 +148,11 @@ export default EditorPage;
 - Zero React components.
 - No imports from `modules/` or `components/`.
 - Functions, types, constants, and configuration only.
+
+### `<module>/mocks/` — Dev-Only Mock Layer
+- Exists only in development. **Never imported by production code** (services, hooks, components).
+- Two files per module: `<module>.handlers.ts` (MSW request interceptors) and `<module>.fixtures.ts` (typed static data).
+- Registered globally through `src/shared/mocks/index.ts`. Individual modules never start MSW themselves.
 
 ---
 
@@ -300,6 +310,10 @@ src/modules/<module>/
 ├── utils/                    # Pure functions scoped to this module
 │   └── <module>.utils.ts
 │
+├── mocks/                    # Dev-only: MSW handlers and fixture data (never imported in production code)
+│   ├── <module>.handlers.ts  # MSW request handlers — one per API endpoint
+│   └── <module>.fixtures.ts  # Typed static mock data referenced by handlers
+│
 └── meta.ts                   # Next.js metadata exports (title, description)
 ```
 
@@ -333,6 +347,9 @@ src/modules/auth/
 │   └── auth.types.ts
 ├── utils/
 │   └── auth.utils.ts
+├── mocks/
+│   ├── auth.handlers.ts
+│   └── auth.fixtures.ts
 └── meta.ts
 ```
 
@@ -361,6 +378,9 @@ src/modules/workspace/           # Module GROUP
 │   │   └── useWorkspaceContext.ts
 │   ├── types/
 │   │   └── workspace.types.ts
+│   ├── mocks/                   # Shared fixtures/handlers for the group's shared types
+│   │   ├── workspace.fixtures.ts
+│   │   └── workspace.handlers.ts
 │   └── index.ts                 # Private to the group
 │
 ├── editor/                      # Sub-module
@@ -369,14 +389,17 @@ src/modules/workspace/           # Module GROUP
 │   ├── hooks/
 │   ├── services/
 │   ├── schemas/
+│   ├── mocks/
 │   └── meta.ts
 │
 ├── canvas/                      # Sub-module
 │   ├── index.ts
+│   ├── mocks/
 │   └── ...
 │
 └── dashboard/                   # Sub-module
     ├── index.ts
+    ├── mocks/
     └── ...
 ```
 
@@ -519,7 +542,191 @@ export const workspaceKeys = {
 
 ---
 
-## 9. Shared Layer
+## 9. Mock API & Mock Data
+
+> **Tool: MSW (Mock Service Worker)** — intercepts `fetch` calls at the network level in both browser and Node environments. The service layer calls `fetch` as normal; MSW intercepts the request before it leaves the browser and returns the mock response. No changes to service functions, hooks, or components are needed to switch between real and mock.
+>
+> **Install (dev dependency only):** `pnpm add -D msw`
+
+### How It Works
+
+```
+Browser                     MSW Service Worker          NestJS Backend
+  │                               │                           │
+  │── fetch POST /auth/login ───▶ │                           │
+  │                               │  handler matched          │
+  │◀── mock response ─────────── │                           │
+  │                                                           │
+  │  (when NEXT_PUBLIC_API_MOCKING is not "enabled")          │
+  │── fetch POST /auth/login ─────────────────────────────▶  │
+  │◀── real response ─────────────────────────────────────── │
+```
+
+### Enabling Mocks
+
+Set in `.env.local` (never in `.env.production`):
+
+```bash
+NEXT_PUBLIC_API_MOCKING=enabled
+```
+
+Start the MSW worker before anything renders by adding this to `app/layout.tsx`:
+
+```tsx
+// app/layout.tsx — inside RootLayout, before the return statement
+if (process.env.NEXT_PUBLIC_API_MOCKING === "enabled") {
+  const { startMocking } = await import("@/shared/mocks");
+  await startMocking();
+}
+```
+
+Because `NEXT_PUBLIC_API_MOCKING` is never set in production, Next.js tree-shakes the entire mock import out of the production bundle.
+
+### Directory Layout
+
+```
+src/
+├── modules/
+│   └── <module>/
+│       └── mocks/                       # Dev-only — never imported in production code
+│           ├── <module>.handlers.ts     # MSW request handlers — one per API endpoint
+│           └── <module>.fixtures.ts     # Typed static data referenced by handlers
+│
+└── shared/
+    └── mocks/
+        ├── index.ts                     # Exports startMocking() — the only thing app/ imports
+        ├── browser.ts                   # MSW browser worker: aggregates all module handlers
+        └── server.ts                    # MSW Node server: used in tests and CI
+```
+
+### Fixtures — `<module>.fixtures.ts`
+
+Fixtures are plain typed objects that match the module's TypeScript types exactly. Handlers reference fixtures — they never inline their own data.
+
+```ts
+// src/modules/auth/mocks/auth.fixtures.ts
+// @module:auth @layer:mock @scope:module:auth @deps:type:auth.types
+
+import type { AuthUser, LoginResponse } from "../types/auth.types";
+
+export const mockAuthUser: AuthUser = {
+  id: "user-001",
+  email: "dev@bisaya.ai",
+  displayName: "Dev User",
+  avatarUrl: null,
+  createdAt: "2024-01-01T00:00:00.000Z",
+};
+
+export const mockLoginResponse: LoginResponse = {
+  user: mockAuthUser,
+  accessToken: "mock-access-token",
+};
+```
+
+**Rules:**
+- All fields must be present and match the TypeScript type exactly. No `as any`, no `Partial<T>`.
+- Use stable, predictable values — no `Math.random()`, no `Date.now()`. Randomness makes debugging harder.
+- Prefix every exported name with `mock` so fixtures are immediately identifiable wherever they're imported.
+- One fixtures file per module. If a module group's `_core/` defines shared types, shared fixtures live in `_core/mocks/`.
+
+### Handlers — `<module>.handlers.ts`
+
+Handlers tell MSW which URL to intercept and what to return. They must mirror the real NestJS endpoints exactly — same URL, same HTTP method, same response shape.
+
+```ts
+// src/modules/auth/mocks/auth.handlers.ts
+// @module:auth @layer:mock @scope:module:auth @deps:fixture:auth.fixtures
+
+import { http, HttpResponse } from "msw";
+import { mockLoginResponse, mockAuthUser } from "./auth.fixtures";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+
+export const authHandlers = [
+  http.post(`${BASE}/auth/login`, () =>
+    HttpResponse.json(mockLoginResponse, { status: 200 })
+  ),
+
+  http.post(`${BASE}/auth/logout`, () =>
+    HttpResponse.json({ success: true }, { status: 200 })
+  ),
+
+  http.get(`${BASE}/auth/session`, () =>
+    HttpResponse.json(mockAuthUser, { status: 200 })
+  ),
+];
+```
+
+**Rules:**
+- Handler URLs must exactly match the `BASE` + path used in the module's service file.
+- Every endpoint that has a service function must have a corresponding handler so the app is fully usable with no backend running.
+- Status codes must match the real API contract — use `401` for unauthenticated, `403` for unauthorised, `422` for validation errors.
+- To simulate an error response: `HttpResponse.json({ message: "Invalid credentials" }, { status: 401 })`.
+
+### Shared MSW Setup
+
+```ts
+// src/shared/mocks/browser.ts
+// Add each module's handlers here when the module is created
+import { setupWorker } from "msw/browser";
+import { authHandlers } from "@/modules/auth/mocks/auth.handlers";
+import { workspaceHandlers } from "@/modules/workspace/mocks/workspace.handlers";
+
+export const worker = setupWorker(
+  ...authHandlers,
+  ...workspaceHandlers,
+);
+```
+
+```ts
+// src/shared/mocks/server.ts — Node environment only (tests, CI)
+import { setupServer } from "msw/node";
+import { authHandlers } from "@/modules/auth/mocks/auth.handlers";
+import { workspaceHandlers } from "@/modules/workspace/mocks/workspace.handlers";
+
+export const server = setupServer(
+  ...authHandlers,
+  ...workspaceHandlers,
+);
+```
+
+```ts
+// src/shared/mocks/index.ts
+// app/layout.tsx imports ONLY this file — never browser.ts or server.ts directly
+
+export async function startMocking() {
+  if (typeof window === "undefined") return; // never run in SSR or Node context
+  const { worker } = await import("./browser");
+  await worker.start({ onUnhandledRequest: "warn" });
+  // onUnhandledRequest: "warn" logs a console warning any time a fetch call
+  // is made that has no matching handler, making forgotten handlers easy to spot.
+}
+```
+
+### Adding a New Module
+
+When creating a new module, add its handler import to both `browser.ts` and `server.ts`. That is the only change needed outside the new module's own folder.
+
+### Simulating Error States
+
+Override a single handler temporarily without modifying the global setup:
+
+```ts
+// In a test file, or mounted via a dev-tools panel:
+import { server } from "@/shared/mocks/server";
+import { http, HttpResponse } from "msw";
+
+server.use(
+  http.post(`${BASE}/auth/login`, () =>
+    HttpResponse.json({ message: "Invalid credentials" }, { status: 401 })
+  )
+);
+// server.use() overrides are automatically reset after each test.
+```
+
+---
+
+## 10. Shared Layer
 
 `src/shared/` has no business logic and no UI components. It never imports from `modules/` or `components/` — it sits at the bottom of the dependency chain so every other layer can safely import from it.
 
@@ -566,7 +773,7 @@ export const ROUTES = {
 
 ---
 
-## 10. Import & Barrel Rules
+## 11. Import & Barrel Rules
 
 ### Path Alias
 
@@ -621,7 +828,7 @@ export type { AuthUser } from "./types/auth.types";
 
 ---
 
-## 11. Git Flow + Worktree Strategy
+## 12. Git Flow + Worktree Strategy
 
 This project follows **Git Flow**. The modular vertical-slice structure maps cleanly onto Git Flow branches, enabling parallel `git worktree` setups with minimal merge conflicts.
 
@@ -729,7 +936,7 @@ git branch -d feature/auth/google-oauth
 
 ---
 
-## 12. LLM Prompt Convention
+## 13. LLM Prompt Convention
 
 Every file carries a **machine-readable header comment** on line 1. This enables LLMs to instantly understand context, constraints, and co-located files without needing to traverse the tree.
 
@@ -742,7 +949,7 @@ Every file carries a **machine-readable header comment** on line 1. This enables
 | Tag | Values | Description |
 |---|---|---|
 | `@module` | module name or `shared` or `global` | Which vertical slice owns this file |
-| `@layer` | `atom`, `molecule`, `organism`, `template`, `page`, `hook`, `service`, `schema`, `util`, `config` | Atomic / architectural layer |
+| `@layer` | `atom`, `molecule`, `organism`, `template`, `page`, `hook`, `service`, `schema`, `util`, `config`, `mock` | Atomic / architectural layer |
 | `@scope` | `global`, `module:<name>`, `group:<name>` | Visibility scope |
 | `@deps` | comma-separated list in `layer:name` format, e.g. `hook:useLoginMutation,organism:LoginForm`. Use `none` if no local deps. | What this file imports from within the project |
 
@@ -879,6 +1086,35 @@ CONSTRAINTS:
 
 ---
 
+---
+
+#### PROMPT: Generate mock handlers and fixtures for a module
+
+```
+TASK: Create MSW mock handlers and fixtures for an existing module.
+MODULE: <module-name>
+ENDPOINTS:
+  <METHOD> /api/<path>  →  <ResponseTypeName>
+  <METHOD> /api/<path>  →  <ResponseTypeName>
+
+CONSTRAINTS:
+- Fixtures file: src/modules/<module>/mocks/<module>.fixtures.ts
+  - Export one const per response type, prefixed with "mock" (e.g. mockAuthUser)
+  - All fields present and typed — no Partial<T>, no as any
+  - Use stable values: no Math.random(), no Date.now()
+  - Add @module/@layer:mock/@scope/@deps header on line 1
+- Handlers file: src/modules/<module>/mocks/<module>.handlers.ts
+  - Export const <module>Handlers: array of http.* calls
+  - Handler URLs must exactly match BASE + path used in <module>.service.ts
+  - Import all response data from the fixtures file — never inline data
+  - Status codes must match the real API contract
+  - Add @module/@layer:mock/@scope/@deps header on line 1
+- After creating both files, add the handler import to:
+    src/shared/mocks/browser.ts  (spread into setupWorker)
+    src/shared/mocks/server.ts   (spread into setupServer)
+- Do NOT modify any service, hook, or component file
+```
+
 #### PROMPT: Review a file for architecture compliance
 
 ```
@@ -902,7 +1138,7 @@ OUTPUT: List each violation with file:line and the rule it breaks.
 
 ---
 
-## 13. Naming Conventions Cheatsheet
+## 14. Naming Conventions Cheatsheet
 
 | What | Convention | Example |
 |---|---|---|
@@ -921,12 +1157,16 @@ OUTPUT: List each violation with file:line and the rule it breaks.
 | Query keys const | `<module>Keys` | `workspaceKeys` |
 | CSS custom props | kebab-case | `--color-primary` |
 | Route constants | Nested object with `UPPER_CASE` keys; always access via the `ROUTES` constant, never write raw strings | `ROUTES.AUTH.LOGIN` |
+| Mock handler files | camelCase `.handlers.ts` | `auth.handlers.ts` |
+| Mock fixture files | camelCase `.fixtures.ts` | `auth.fixtures.ts` |
+| Mock fixture exports | camelCase `mock` prefix | `mockAuthUser`, `mockLoginResponse` |
+| MSW handler arrays | camelCase `<module>Handlers` | `authHandlers`, `workspaceHandlers` |
 | Branch names | `type/module/description` | `feature/auth/google-oauth` |
 | Worktree dirs | `../web-<module>` | `../web-workspace` |
 
 ---
 
-## 14. Forbidden Patterns
+## 15. Forbidden Patterns
 
 These patterns are **unconditionally banned**. No exceptions without an ADR.
 
@@ -968,11 +1208,24 @@ import { useWorkspaceContext } from "@/modules/workspace/_core"; // BANNED outsi
 
 // ❌ Hand-editing shadcn ui primitives
 // src/components/ui/button.tsx — NEVER modify directly; extend via CVA variants
+
+// ❌ Importing mock fixtures or handlers in production code
+// Inside src/modules/auth/services/auth.service.ts — BANNED
+import { mockLoginResponse } from "../mocks/auth.fixtures";
+
+// ❌ Importing mock fixtures in a component — BANNED
+import { mockAuthUser } from "@/modules/auth/mocks/auth.fixtures";
+
+// ❌ Calling startMocking() outside of app/layout.tsx — BANNED
+import { startMocking } from "@/shared/mocks"; // only app/layout.tsx may import this
+
+// ❌ Setting NEXT_PUBLIC_API_MOCKING in .env.production — BANNED
+// Mocks must never run in production
 ```
 
 ---
 
-## 15. Decision Tree — Where Does This File Go?
+## 16. Decision Tree — Where Does This File Go?
 
 ```
 Is it a Next.js routing file (page, layout, loading, error)?
@@ -1013,4 +1266,12 @@ Is it a pure utility function?
 Is it configuration (QueryClient, env, routes)?
   ├── Provider or client setup (QueryClient, auth context)? → src/shared/config/
   └── Static values (route paths, magic strings)?           → src/shared/constants/
+
+Is it a mock file (dev only)?
+  ├── Static typed data for a single module?
+  │     └── YES → src/modules/<module>/mocks/<module>.fixtures.ts
+  ├── MSW request handlers for a single module?
+  │     └── YES → src/modules/<module>/mocks/<module>.handlers.ts
+  └── MSW worker/server setup or startMocking()?
+        └── YES → src/shared/mocks/
 ```
