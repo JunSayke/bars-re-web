@@ -1,6 +1,3 @@
+import { ForgotPage } from "@/modules/auth"
 
-export default function ForgotPage() {
-  return (
-    <div>Forgot Password</div>
-  );
-}
+export default ForgotPage

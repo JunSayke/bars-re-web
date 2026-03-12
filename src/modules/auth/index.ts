@@ -1,3 +1,5 @@
 export { LoginPage } from "./components/LoginPage"
 export { SignupPage } from "./components/SignupPage"
+export { ForgotPage } from "./components/ForgotPage"
+export { ResetPage } from "./components/ResetPage"
 export * as meta from "./meta"

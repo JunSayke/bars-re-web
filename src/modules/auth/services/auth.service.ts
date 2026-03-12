@@ -1,39 +1,50 @@
-import type { LoginDto, SignupDto } from "../schemas/auth.schema"
-import type { AuthUser, AuthError } from "../types/auth.types"
+import type { LoginDto, SignupDto, ForgotPasswordDto, ResetPasswordDto } from "../schemas/auth.schema"
+import type { AuthUser, AuthError, ForgotPasswordResponse, ResetPasswordResponse } from "../types/auth.types"
 
-const mockDelay = (ms: number) =>
-  new Promise<void>((resolve) => setTimeout(resolve, ms))
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
+
+async function handleResponse<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    const err: AuthError = await res.json()
+    throw err
+  }
+  return res.json() as Promise<T>
+}
 
 export async function loginUser(dto: LoginDto): Promise<AuthUser> {
-  await mockDelay(800)
-  if (dto.identifier === "error@test.com") {
-    const error: AuthError = {
-      code: "INVALID_CREDENTIALS",
-      message: "Invalid email or password.",
-    }
-    throw error
-  }
-  return {
-    id: "mock-user-1",
-    username: "bisaya_artist",
-    email: dto.identifier,
-    token: "mock-jwt-token-12345",
-  }
+  const res = await fetch(`${BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dto),
+  })
+  return handleResponse<AuthUser>(res)
 }
 
 export async function signupUser(dto: SignupDto): Promise<AuthUser> {
-  await mockDelay(800)
-  if (dto.username === "reserved_user") {
-    const error: AuthError = {
-      code: "USERNAME_TAKEN",
-      message: "That username is already taken.",
-    }
-    throw error
-  }
-  return {
-    id: "mock-user-2",
-    username: dto.username,
-    email: dto.email,
-    token: "mock-jwt-token-67890",
-  }
+  const res = await fetch(`${BASE}/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dto),
+  })
+  return handleResponse<AuthUser>(res)
+}
+
+export async function forgotPassword(dto: ForgotPasswordDto): Promise<ForgotPasswordResponse> {
+  const res = await fetch(`${BASE}/auth/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dto),
+  })
+  return handleResponse<ForgotPasswordResponse>(res)
+}
+
+export async function resetPassword(
+  dto: ResetPasswordDto & { token: string }
+): Promise<ResetPasswordResponse> {
+  const res = await fetch(`${BASE}/auth/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dto),
+  })
+  return handleResponse<ResetPasswordResponse>(res)
 }

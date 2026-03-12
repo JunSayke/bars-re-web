@@ -9,3 +9,11 @@ export type AuthError = {
   code: string
   message: string
 }
+
+export type ForgotPasswordResponse = {
+  message: string
+}
+
+export type ResetPasswordResponse = {
+  message: string
+}
