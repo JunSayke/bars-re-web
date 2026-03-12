@@ -1,6 +1,5 @@
+import { LoginPage } from "@/modules/auth"
 
-export default function LoginPage() {
-  return (
-    <div>Login Page</div>
-  );
-}
+export { loginMeta as metadata } from "@/modules/auth/meta"
+
+export default LoginPage
