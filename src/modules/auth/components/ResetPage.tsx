@@ -1,16 +1,25 @@
 "use client"
 
-import { Suspense } from "react"
+import { Suspense, useCallback } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { useResetPasswordMutation } from "../hooks/useResetPasswordMutation"
 import { ResetPasswordForm } from "./organisms/ResetPasswordForm"
 import { CenteredCardShell } from "./templates/CenteredCardShell"
+import { ROUTES } from "@/shared/constants/routes"
+import type { ResetPasswordDto } from "../schemas/auth.schema"
 
 function ResetPageInner() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const token = searchParams.get("token")
   const { mutate, isPending, error } = useResetPasswordMutation()
+
+  const handleSubmit = useCallback(
+    (data: ResetPasswordDto) => {
+      mutate({ ...data, token: token! }, { onSuccess: () => router.push(ROUTES.AUTH.LOGIN) })
+    },
+    [mutate, router, token]
+  )
 
   if (!token) {
     return (
@@ -28,9 +37,7 @@ function ResetPageInner() {
   return (
     <CenteredCardShell>
       <ResetPasswordForm
-        onSubmit={(data) =>
-          mutate({ ...data, token }, { onSuccess: () => router.push("/login") })
-        }
+        onSubmit={handleSubmit}
         isPending={isPending}
         serverError={error}
       />

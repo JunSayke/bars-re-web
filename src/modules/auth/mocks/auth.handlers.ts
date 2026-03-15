@@ -1,35 +1,49 @@
+// @module: auth
+// @layer: mock
+// @scope: module
+// @deps: auth.fixtures.ts
+
 import { http, HttpResponse } from "msw"
 import {
-  mockAuthUser,
-  mockSignupUser,
+  mockSupabaseSession,
+  mockSupabaseSignupResponse,
   mockInvalidCredentialsError,
-  mockUsernameTakenError,
+  mockEmailInUseError,
   mockForgotPasswordSuccess,
   mockForgotPasswordError,
   mockResetPasswordSuccess,
   mockResetPasswordError,
 } from "./auth.fixtures"
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://localhost:54321"
 
 export const authHandlers = [
-  http.post(`${BASE}/auth/login`, async ({ request }) => {
-    const body = await request.json() as { identifier: string }
-    if (body.identifier === "error@test.com") {
-      return HttpResponse.json(mockInvalidCredentialsError, { status: 401 })
+  // Login — supabase.auth.signInWithPassword
+  http.post(`${SUPABASE_URL}/auth/v1/token`, async ({ request }) => {
+    const body = await request.json() as { email: string; password: string }
+    if (body.email === "error@test.com") {
+      return HttpResponse.json(mockInvalidCredentialsError, { status: 400 })
     }
-    return HttpResponse.json({ ...mockAuthUser, email: body.identifier })
+    return HttpResponse.json({
+      ...mockSupabaseSession,
+      user: { ...mockSupabaseSession.user, email: body.email },
+    })
   }),
 
-  http.post(`${BASE}/auth/signup`, async ({ request }) => {
-    const body = await request.json() as { username: string; email: string }
-    if (body.username === "reserved_user") {
-      return HttpResponse.json(mockUsernameTakenError, { status: 409 })
+  // Signup — supabase.auth.signUp
+  http.post(`${SUPABASE_URL}/auth/v1/signup`, async ({ request }) => {
+    const body = await request.json() as { email: string; password: string }
+    if (body.email === "taken@test.com") {
+      return HttpResponse.json(mockEmailInUseError, { status: 422 })
     }
-    return HttpResponse.json({ ...mockSignupUser, username: body.username, email: body.email })
+    return HttpResponse.json({
+      ...mockSupabaseSignupResponse,
+      user: { ...mockSupabaseSignupResponse.user, email: body.email },
+    })
   }),
 
-  http.post(`${BASE}/auth/forgot-password`, async ({ request }) => {
+  // Forgot password — supabase.auth.resetPasswordForEmail
+  http.post(`${SUPABASE_URL}/auth/v1/recover`, async ({ request }) => {
     const body = await request.json() as { email: string }
     if (body.email === "fail@test.com") {
       return HttpResponse.json(mockForgotPasswordError, { status: 500 })
@@ -37,10 +51,11 @@ export const authHandlers = [
     return HttpResponse.json(mockForgotPasswordSuccess)
   }),
 
-  http.post(`${BASE}/auth/reset-password`, async ({ request }) => {
-    const body = await request.json() as { token: string }
-    if (body.token === "invalid-token") {
-      return HttpResponse.json(mockResetPasswordError, { status: 400 })
+  // Reset password — supabase.auth.updateUser
+  http.put(`${SUPABASE_URL}/auth/v1/user`, async ({ request }) => {
+    const body = await request.json() as { password: string }
+    if (body.password === "invalid") {
+      return HttpResponse.json(mockResetPasswordError, { status: 401 })
     }
     return HttpResponse.json(mockResetPasswordSuccess)
   }),

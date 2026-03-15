@@ -1,50 +1,74 @@
-import type { LoginDto, SignupDto, ForgotPasswordDto, ResetPasswordDto } from "../schemas/auth.schema"
+// @module: auth
+// @layer: service
+// @scope: module
+// @deps: @/shared/config/supabase, auth.types.ts, auth.schema.ts
+
+import { supabase } from "@/shared/config/supabase"
 import type { AuthUser, AuthError, ForgotPasswordResponse, ResetPasswordResponse } from "../types/auth.types"
+import type { LoginDto, SignupDto, ForgotPasswordDto, ResetPasswordDto } from "../schemas/auth.schema"
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
-
-async function handleResponse<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    const err: AuthError = await res.json()
-    throw err
+function toAuthError(error: unknown): AuthError {
+  if (error && typeof error === "object" && "message" in error) {
+    return {
+      message: (error as { message: string }).message,
+      status: "status" in error ? (error as { status: number }).status : undefined,
+    }
   }
-  return res.json() as Promise<T>
+  return { message: "An unexpected error occurred" }
 }
 
 export async function loginUser(dto: LoginDto): Promise<AuthUser> {
-  const res = await fetch(`${BASE}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dto),
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: dto.identifier,
+    password: dto.password,
   })
-  return handleResponse<AuthUser>(res)
+
+  if (error || !data.session) throw toAuthError(error)
+
+  return {
+    id: data.user.id,
+    email: data.user.email ?? "",
+    accessToken: data.session.access_token,
+  }
 }
 
 export async function signupUser(dto: SignupDto): Promise<AuthUser> {
-  const res = await fetch(`${BASE}/auth/signup`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dto),
+  const { data, error } = await supabase.auth.signUp({
+    email: dto.email,
+    password: dto.password,
   })
-  return handleResponse<AuthUser>(res)
+
+  if (error) throw toAuthError(error)
+
+  // Supabase returns an empty identities array for already-registered emails
+  // instead of an error, to prevent email enumeration
+  if (!data.user || !data.session || data.user.identities?.length === 0) {
+    throw { message: "An account with this email already exists.", status: 422 } satisfies AuthError
+  }
+
+  return {
+    id: data.user.id,
+    email: data.user.email ?? "",
+    accessToken: data.session.access_token,
+  }
 }
 
 export async function forgotPassword(dto: ForgotPasswordDto): Promise<ForgotPasswordResponse> {
-  const res = await fetch(`${BASE}/auth/forgot-password`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dto),
-  })
-  return handleResponse<ForgotPasswordResponse>(res)
+  const { error } = await supabase.auth.resetPasswordForEmail(dto.email)
+
+  if (error) throw toAuthError(error)
+
+  return { message: "Password reset email sent" }
 }
 
 export async function resetPassword(
   dto: ResetPasswordDto & { token: string }
 ): Promise<ResetPasswordResponse> {
-  const res = await fetch(`${BASE}/auth/reset-password`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dto),
+  const { error } = await supabase.auth.updateUser({
+    password: dto.newPassword,
   })
-  return handleResponse<ResetPasswordResponse>(res)
+
+  if (error) throw toAuthError(error)
+
+  return { message: "Password updated successfully" }
 }
