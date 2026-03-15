@@ -1,5 +1,5 @@
-// @module:global @layer:page @scope:global @deps:module:user-management
-import { LoginPage, loginMetadata } from "@/modules/user-management";
+import { LoginPage } from "@/modules/auth"
 
-export const metadata = loginMetadata;
-export default LoginPage;
+export { loginMeta as metadata } from "@/modules/auth/meta"
+
+export default LoginPage
