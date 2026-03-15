@@ -1,6 +1,5 @@
+import { SignupPage } from "@/modules/auth"
 
-export default function SignupPage() {
-  return (
-    <div>Signup Page</div>
-  );
-}
+export { signupMeta as metadata } from "@/modules/auth/meta"
+
+export default SignupPage
