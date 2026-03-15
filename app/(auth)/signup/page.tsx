@@ -1,6 +1,5 @@
+// @module:global @layer:page @scope:global @deps:module:user-management
+import { SignupPage, signupMetadata } from "@/modules/user-management";
 
-export default function SignupPage() {
-  return (
-    <div>Signup Page</div>
-  );
-}
+export const metadata = signupMetadata;
+export default SignupPage;

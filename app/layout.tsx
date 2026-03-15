@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/shared/config/QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,7 +39,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${beVietnam.variable} antialiased dark`}
       >
-              {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
