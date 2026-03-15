@@ -3,7 +3,6 @@ import { Geist, Geist_Mono, Be_Vietnam_Pro } from "next/font/google";
 import { QueryProvider } from "@/shared/providers/QueryProvider";
 import { MockProvider } from "@/shared/mocks/MockProvider";
 import "./globals.css";
-import { Providers } from "@/shared/config/QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

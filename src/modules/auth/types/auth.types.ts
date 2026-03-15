@@ -1,13 +1,17 @@
+// @module: auth
+// @layer: types
+// @scope: module
+// @deps: none
+
 export type AuthUser = {
   id: string
-  username: string
   email: string
-  token: string
+  accessToken: string
 }
 
 export type AuthError = {
-  code: string
   message: string
+  status?: number
 }
 
 export type ForgotPasswordResponse = {

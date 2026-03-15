@@ -3,7 +3,7 @@
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
-import { Loader2, Mic } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { signupSchema, type SignupDto } from "../../schemas/auth.schema"
 import { PasswordField } from "../molecules/PasswordField"
 import { OAuthDivider } from "../atoms/OAuthDivider"
@@ -40,23 +40,6 @@ export function SignupForm({ onSubmit, isPending, serverError }: SignupFormProps
           {serverError.message}
         </p>
       )}
-
-      <div className="space-y-1.5">
-        <Label htmlFor="username">Username</Label>
-        <div className="relative flex items-center">
-          <Mic className="pointer-events-none absolute left-3 size-4 text-muted-foreground" />
-          <Input
-            id="username"
-            placeholder="bisaya_artist"
-            className="pl-9"
-            aria-invalid={!!errors.username}
-            {...register("username")}
-          />
-        </div>
-        {errors.username && (
-          <p className="text-xs text-destructive">{errors.username.message}</p>
-        )}
-      </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="email">Email</Label>
