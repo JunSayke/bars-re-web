@@ -31,21 +31,44 @@ The system SHALL prevent form submission when the SESSION TITLE field is empty.
 
 ---
 
-### Requirement: Create session via API and navigate to editor
-The system SHALL submit the session form to POST /sessions, and on success navigate the user to the editor page with the new session ID.
+### Requirement: Create session via Supabase session service and navigate to editor
+The system SHALL submit the session form via the Supabase session service (not raw REST) and on success navigate locally to the editor route with the returned session ID.
 
 #### Scenario: Successful session creation
 - **WHEN** the user submits the New Session form with a valid title
-- **THEN** the system sends a POST /sessions request with the title and optional topic, and upon receiving a 201 response navigates to /workspaces/editor?id=<sessionId>
+- **THEN** the system calls `sessionService.createSession` (or equivalent Supabase wrapper) with title/topic, and on success uses local router navigation to `/workspaces/editor?id=<sessionId>`
 
 #### Scenario: Loading state during creation
-- **WHEN** the POST /sessions request is in flight
+- **WHEN** the createSession call is in flight
 - **THEN** the "CREATE SESSION" button shows a loading/disabled state and the form cannot be resubmitted
 
 ---
 
 ### Requirement: Show error feedback on creation failure
-The system SHALL display an error toast when the session creation request fails.
+The system SHALL surface Supabase errors and session-limit conditions in a user-friendly error toast from the Supabase session service call.
+
+#### Scenario: Error toast on create failure
+- **WHEN** `sessionService.createSession` rejects with an error (e.g. Supabase error code, network error, or database constraint)
+- **THEN** the dialog remains open with the user's input intact and a toast notification describes the failure
+
+#### Scenario: Session limit reached error from Supabase count query
+- **WHEN** the session creation is blocked because the user already has 100 sessions
+- **THEN** the app shows a toast "Session limit reached. Delete an existing session to continue." and no navigation occurs
+
+---
+
+### Requirement: Enforce session limit via Supabase count query
+The system SHALL check the current user session count using Supabase before creating a new session and block creation if the count is at the configured limit.
+
+#### Scenario: Block creation at limit
+- **WHEN** `sessionService.getUserSessionCount` returns >= 100
+- **THEN** the UI prevents create action and shows a toast "Session limit reached. Delete an existing session to continue."
+
+#### Scenario: Allow creation below limit
+- **WHEN** `sessionService.getUserSessionCount` returns < 100
+- **THEN** the create flow continues and calls `sessionService.createSession` as normal
+
+---
 
 #### Scenario: Error toast on API failure
 - **WHEN** the POST /sessions request returns an error (e.g., 429 session limit reached or 500 server error)

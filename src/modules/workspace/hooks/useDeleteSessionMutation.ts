@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { deleteSession } from "../services/workspace.service"
+import { deleteSession } from "../services/session.service"
 import { workspaceKeys } from "./queryKeys"
 import type { SessionSummary } from "../schemas/workspace.schema"
 

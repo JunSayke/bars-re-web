@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { createSession } from "../services/workspace.service"
+import { createSession } from "../services/session.service"
 import { workspaceKeys } from "./queryKeys"
 import type { CreateSessionPayload } from "../schemas/workspace.schema"
 

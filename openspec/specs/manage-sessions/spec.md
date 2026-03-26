@@ -34,8 +34,8 @@ The system SHALL open the New Rap Session dialog when the user clicks the "New S
 
 ---
 
-### Requirement: Rename session
-The system SHALL allow the user to rename a session via a dialog triggered from the session overflow menu.
+### Requirement: Rename session via Supabase session service
+The system SHALL allow the user to rename a session via a dialog triggered from the session overflow menu and perform the rename through the Supabase session service.
 
 #### Scenario: User opens rename dialog
 - **WHEN** the user clicks the three-dot overflow menu on a session card and selects "Rename"
@@ -43,7 +43,7 @@ The system SHALL allow the user to rename a session via a dialog triggered from 
 
 #### Scenario: Successful rename
 - **WHEN** the user enters a non-empty title and confirms the dialog
-- **THEN** the system sends a PATCH request to `/sessions/:id/rename` and updates the card title in the list upon success
+- **THEN** the system calls `sessionService.renameSession(sessionId, newTitle)` and updates the card title in the list upon success
 
 #### Scenario: Empty title rejected
 - **WHEN** the user clears the title input and attempts to confirm
@@ -51,8 +51,26 @@ The system SHALL allow the user to rename a session via a dialog triggered from 
 
 ---
 
-### Requirement: Delete session with confirmation
-The system SHALL allow the user to delete a session after confirming via a confirmation dialog triggered from the session overflow menu.
+### Requirement: Delete session with confirmation and cascade via Supabase
+The system SHALL allow the user to delete a session after confirming, using Supabase delete via `sessionService.deleteSession`, with cascade semantics and optimistic UI updates.
+
+#### Scenario: User sees confirmation before delete
+- **WHEN** the user clicks the three-dot overflow menu on a session card and selects "Delete"
+- **THEN** a confirmation dialog appears asking the user to confirm permanent deletion
+
+#### Scenario: Confirmed delete removes session optimistically
+- **WHEN** the user confirms deletion in the dialog
+- **THEN** the session card is optimistically removed from the list and `sessionService.deleteSession(sessionId)` is called to delete with cascade references
+
+#### Scenario: Delete failure restores card
+- **WHEN** the delete action fails in Supabase
+- **THEN** the session card is restored and an error toast is displayed informing the user the session was retained
+
+#### Scenario: User cancels delete
+- **WHEN** the user dismisses the confirmation dialog without confirming
+- **THEN** the session card remains in the list and no request is sent
+
+---
 
 #### Scenario: User sees confirmation before delete
 - **WHEN** the user clicks the three-dot overflow menu on a session card and selects "Delete"
