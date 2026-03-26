@@ -4,3 +4,8 @@ export const workspaceKeys = {
   session: (id: string) => [...workspaceKeys.all, "session", id] as const,
   draft: (id: string) => [...workspaceKeys.all, "draft", id] as const,
 }
+
+export const snippetKeys = {
+  snippets: () => ["snippets"] as const,
+  snippet: (id: string) => ["snippets", id] as const,
+}

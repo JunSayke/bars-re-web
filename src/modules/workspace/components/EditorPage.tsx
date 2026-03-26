@@ -1,16 +1,26 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { toast } from "sonner"
 import { useGetSessionQuery } from "../hooks/useGetSessionQuery"
 import { useSaveDraftMutation } from "../hooks/useSaveDraftMutation"
+import { useSnippetsQuery } from "../hooks/useSnippetsQuery"
+import { useCreateSnippetMutation } from "../hooks/useCreateSnippetMutation"
+import { useUpdateSnippetMutation } from "../hooks/useUpdateSnippetMutation"
+import { useDeleteSnippetMutation } from "../hooks/useDeleteSnippetMutation"
 import type { Bar, SectionType } from "../schemas/workspace.schema"
+import type { Snippet, CreateSnippetPayload } from "../types/snippet.types"
 import type { SaveStatus } from "./atoms/AutoSaveStatusIndicator"
 import { AutoSaveStatusIndicator } from "./atoms/AutoSaveStatusIndicator"
 import type { SectionData } from "./organisms/BarsEditor"
 import { BarsEditor } from "./organisms/BarsEditor"
 import { BeatPlayerBar } from "./organisms/BeatPlayerBar"
 import { EditorTopNav } from "./organisms/EditorTopNav"
+import { WorkspaceWindowMenu } from "./organisms/WorkspaceWindowMenu"
+import { SnippetList } from "./organisms/SnippetList"
+import { SnippetFormDialog } from "./molecules/SnippetFormDialog"
 import { EditorShell } from "./templates/EditorShell"
+import { SnippetsPanel } from "./templates/SnippetsPanel"
 
 const DEFAULT_SESSION_ID = "mock-session-1"
 
@@ -58,6 +68,80 @@ export function EditorPage() {
   const { session, isLoading, isError } = useGetSessionQuery(sessionId)
   const { mutate: saveMutate, isPending, isError: isSaveError, isSuccess: isSaveSuccess } =
     useSaveDraftMutation(sessionId)
+
+  // ── Snippet data hooks ────────────────────────────────────────────────────
+  const { snippets, isLoading: snippetsLoading } = useSnippetsQuery()
+  const createSnippet = useCreateSnippetMutation()
+  const updateSnippet = useUpdateSnippetMutation()
+  const deleteSnippet = useDeleteSnippetMutation()
+
+  // ── Panel open/close state ────────────────────────────────────────────────
+  const [openPanels, setOpenPanels] = useState<Set<string>>(new Set())
+  const handleTogglePanel = (key: string) => {
+    setOpenPanels((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  // ── Snippet form dialog state ─────────────────────────────────────────────
+  const [snippetDialogOpen, setSnippetDialogOpen] = useState(false)
+  const [editingSnippet, setEditingSnippet] = useState<Snippet | null>(null)
+
+  const handleNewSnippet = () => {
+    setEditingSnippet(null)
+    setSnippetDialogOpen(true)
+  }
+
+  const handleEditSnippet = (snippet: Snippet) => {
+    setEditingSnippet(snippet)
+    setSnippetDialogOpen(true)
+  }
+
+  const handleSnippetFormSubmit = (data: CreateSnippetPayload) => {
+    if (editingSnippet) {
+      updateSnippet.mutate(
+        { id: editingSnippet.id, payload: data },
+        { onSuccess: () => setSnippetDialogOpen(false) }
+      )
+    } else {
+      createSnippet.mutate(data, {
+        onSuccess: () => setSnippetDialogOpen(false),
+        onError: (err: unknown) => {
+          const msg = (err as { message?: string })?.message ?? "Failed to create snippet."
+          toast.error(msg)
+        },
+      })
+    }
+  }
+
+  const handleDeleteSnippet = (snippet: Snippet) => {
+    deleteSnippet.mutate(snippet.id)
+  }
+
+  const handleInsertSnippet = (content: string) => {
+    const lines = content.split("\n").filter((l) => l.trim().length > 0)
+    if (lines.length === 0) return
+    setBars((prev) => {
+      const existingKeys = [...new Set(prev.map((b) => b.section))]
+      const verseNumbers = existingKeys
+        .map((k) => k.match(/^verse-(\d+)$/))
+        .filter(Boolean)
+        .map((m) => Number(m![1]))
+      const nextVerseNum = verseNumbers.length > 0 ? Math.max(...verseNumbers) + 1 : 1
+      const newSectionKey = `verse-${nextVerseNum}`
+      const startOrder = prev.length
+      const newBars: Bar[] = lines.map((line, i) => ({
+        id: generateId(),
+        text: line,
+        section: newSectionKey,
+        order: startOrder + i,
+      }))
+      return [...prev, ...newBars]
+    })
+  }
 
   const [bars, setBars] = useState<Bar[]>([])
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle")
@@ -263,36 +347,65 @@ export function EditorPage() {
   const sections = groupBars(bars)
 
   return (
-    <EditorShell
-      topNav={
-        <EditorTopNav sessionTitle={session?.title ?? ""} />
-      }
-      bottomBar={<BeatPlayerBar sessionId={sessionId} />}
-    >
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          {isAtWordLimit && (
-            <span className="text-xs text-destructive font-medium">
-              Word limit reached — save blocked
-            </span>
-          )}
-          <div className="ml-auto">
-            <AutoSaveStatusIndicator status={saveStatus} />
+    <>
+      <EditorShell
+        topNav={
+          <EditorTopNav sessionTitle={session?.title ?? ""} />
+        }
+        bottomBar={<BeatPlayerBar sessionId={sessionId} />}
+      >
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            {isAtWordLimit && (
+              <span className="text-xs text-destructive font-medium">
+                Word limit reached — save blocked
+              </span>
+            )}
+            <div className="ml-auto">
+              <AutoSaveStatusIndicator status={saveStatus} />
+            </div>
           </div>
+          <BarsEditor
+            sections={sections}
+            wordCount={wordCount}
+            onBarChange={handleBarChange}
+            onAddBar={handleAddBar}
+            onRemoveBar={handleRemoveBar}
+            onSectionTypeChange={handleSectionTypeChange}
+            onAddSection={handleAddSection}
+            onRemoveSection={handleRemoveSection}
+            onMoveSection={handleMoveSection}
+            focusBarId={focusBarId}
+          />
         </div>
-        <BarsEditor
-          sections={sections}
-          wordCount={wordCount}
-          onBarChange={handleBarChange}
-          onAddBar={handleAddBar}
-          onRemoveBar={handleRemoveBar}
-          onSectionTypeChange={handleSectionTypeChange}
-          onAddSection={handleAddSection}
-          onRemoveSection={handleRemoveSection}
-          onMoveSection={handleMoveSection}
-          focusBarId={focusBarId}
-        />
-      </div>
-    </EditorShell>
+      </EditorShell>
+
+      <WorkspaceWindowMenu openPanels={openPanels} onToggle={handleTogglePanel} />
+
+      {openPanels.has("snippets") && (
+        <SnippetsPanel onClose={() => handleTogglePanel("snippets")}>
+          <SnippetList
+            snippets={snippets}
+            isLoading={snippetsLoading}
+            onInsert={(s) => handleInsertSnippet(s.content)}
+            onEdit={handleEditSnippet}
+            onDelete={handleDeleteSnippet}
+            onNew={handleNewSnippet}
+          />
+        </SnippetsPanel>
+      )}
+
+      <SnippetFormDialog
+        open={snippetDialogOpen}
+        onOpenChange={setSnippetDialogOpen}
+        defaultValues={
+          editingSnippet
+            ? { title: editingSnippet.title, content: editingSnippet.content, tags: editingSnippet.tags }
+            : undefined
+        }
+        onSubmit={handleSnippetFormSubmit}
+        isPending={createSnippet.isPending || updateSnippet.isPending}
+      />
+    </>
   )
 }
