@@ -1,4 +1,4 @@
-import type { WritingSession } from "../schemas/workspace.schema"
+import type { WritingSession, SessionSummary } from "../schemas/workspace.schema"
 
 export const mockSession: WritingSession = {
   id: "mock-session-1",
@@ -19,3 +19,38 @@ export const mockSession: WritingSession = {
     { id: "bar-08", text: "", section: "verse-2", order: 7 },
   ],
 }
+
+export const mockSessions: SessionSummary[] = [
+  {
+    id: "session-001",
+    title: "Kalsada ni Tatay",
+    topic: "STREET LIFE",
+    previewSnippet: "Gikan sa kalsada, nagsugod ang akong amahan...",
+    thumbnailType: "lyrics",
+    lastModifiedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 min ago
+  },
+  {
+    id: "session-002",
+    title: "Daghan pa ko",
+    topic: "HUSTLE",
+    previewSnippet: "Dili ko mohunong, hangtud maabtan ko ang akong damgo...",
+    thumbnailType: "beat-linked",
+    lastModifiedAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(), // 3 hrs ago
+  },
+  {
+    id: "session-003",
+    title: "Baybayon Vibes",
+    topic: "REGGAE RAP",
+    previewSnippet: "Sa baybayon, naglingkod ko, naghunahuna sa kinabuhi...",
+    thumbnailType: "beat-linked",
+    lastModifiedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+  },
+  {
+    id: "session-004",
+    title: "Libre Flow",
+    topic: "IMPROV",
+    previewSnippet: "Wala'y plano, basta flow ra, ang baba nag-apas sa ritmo...",
+    thumbnailType: "lyrics",
+    lastModifiedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
+  },
+]
