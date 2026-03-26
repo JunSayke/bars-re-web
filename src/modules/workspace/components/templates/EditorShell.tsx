@@ -3,9 +3,10 @@ import type { ReactNode } from "react"
 interface EditorShellProps {
   topNav: ReactNode
   children: ReactNode
+  bottomBar?: ReactNode
 }
 
-export function EditorShell({ topNav, children }: EditorShellProps) {
+export function EditorShell({ topNav, children, bottomBar }: EditorShellProps) {
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
       {topNav}
@@ -14,6 +15,7 @@ export function EditorShell({ topNav, children }: EditorShellProps) {
           {children}
         </div>
       </main>
+      {bottomBar}
     </div>
   )
 }

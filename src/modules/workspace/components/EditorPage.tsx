@@ -8,6 +8,7 @@ import type { SaveStatus } from "./atoms/AutoSaveStatusIndicator"
 import { AutoSaveStatusIndicator } from "./atoms/AutoSaveStatusIndicator"
 import type { SectionData } from "./organisms/BarsEditor"
 import { BarsEditor } from "./organisms/BarsEditor"
+import { BeatPlayerBar } from "./organisms/BeatPlayerBar"
 import { EditorTopNav } from "./organisms/EditorTopNav"
 import { EditorShell } from "./templates/EditorShell"
 
@@ -266,6 +267,7 @@ export function EditorPage() {
       topNav={
         <EditorTopNav sessionTitle={session?.title ?? ""} />
       }
+      bottomBar={<BeatPlayerBar sessionId={sessionId} />}
     >
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">

@@ -47,4 +47,17 @@ export const workspaceHandlers = [
     sessions.push(newSession)
     return HttpResponse.json(newSession, { status: 201 })
   }),
+
+  http.post(`${BASE}/sessions/:id/beat`, async ({ request }) => {
+    const formData = await request.formData()
+    const file = formData.get("file")
+    if (!file) {
+      return HttpResponse.json({ message: "file field is required" }, { status: 400 })
+    }
+    const fileName = file instanceof File ? file.name : String(file)
+    return HttpResponse.json(
+      { beatUrl: "<mock-url>", bpm: 120, fileName },
+      { status: 200 }
+    )
+  }),
 ]
