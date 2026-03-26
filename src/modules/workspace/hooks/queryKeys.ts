@@ -9,3 +9,8 @@ export const snippetKeys = {
   snippets: () => ["snippets"] as const,
   snippet: (id: string) => ["snippets", id] as const,
 }
+
+export const thesaurusKeys = {
+  all: ["thesaurus"] as const,
+  lookup: (term: string) => [...thesaurusKeys.all, "lookup", term] as const,
+}

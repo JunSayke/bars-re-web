@@ -21,6 +21,7 @@ import { SnippetList } from "./organisms/SnippetList"
 import { SnippetFormDialog } from "./molecules/SnippetFormDialog"
 import { EditorShell } from "./templates/EditorShell"
 import { SnippetsPanel } from "./templates/SnippetsPanel"
+import { ThesaurusPanel } from "./templates/ThesaurusPanel"
 
 const DEFAULT_SESSION_ID = "mock-session-1"
 
@@ -381,6 +382,10 @@ export function EditorPage() {
       </EditorShell>
 
       <WorkspaceWindowMenu openPanels={openPanels} onToggle={handleTogglePanel} />
+
+      {openPanels.has("thesaurus") && (
+        <ThesaurusPanel onClose={() => handleTogglePanel("thesaurus")} />
+      )}
 
       {openPanels.has("snippets") && (
         <SnippetsPanel onClose={() => handleTogglePanel("snippets")}>
