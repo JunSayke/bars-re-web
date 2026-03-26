@@ -1,4 +1,4 @@
-import type { WritingSession, SaveDraftPayload, SaveResult, SessionSummary } from "../schemas/workspace.schema"
+import type { WritingSession, SaveDraftPayload, SaveResult, SessionSummary, CreateSessionPayload, CreateSessionResponse } from "../schemas/workspace.schema"
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
 
@@ -49,4 +49,13 @@ export async function deleteSession(id: string): Promise<void> {
     const err = await res.json()
     throw err
   }
+}
+
+export async function createSession(payload: CreateSessionPayload): Promise<CreateSessionResponse> {
+  const res = await fetch(`${BASE}/sessions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+  return handleResponse<CreateSessionResponse>(res)
 }

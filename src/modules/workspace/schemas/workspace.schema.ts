@@ -41,6 +41,13 @@ export const renameSessionPayloadSchema = z.object({
 
 export const renameSessionResponseSchema = sessionSummarySchema
 
+export const createSessionPayloadSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  topic: z.string().optional(),
+})
+
+export const createSessionResponseSchema = sessionSummarySchema
+
 export type SectionType = z.infer<typeof sectionTypeSchema>
 export type Bar = z.infer<typeof barSchema>
 export type WritingSession = z.infer<typeof writingSessionSchema>
@@ -50,3 +57,5 @@ export type ThumbnailType = z.infer<typeof thumbnailTypeSchema>
 export type SessionSummary = z.infer<typeof sessionSummarySchema>
 export type RenameSessionPayload = z.infer<typeof renameSessionPayloadSchema>
 export type RenameSessionResponse = z.infer<typeof renameSessionResponseSchema>
+export type CreateSessionPayload = z.infer<typeof createSessionPayloadSchema>
+export type CreateSessionResponse = z.infer<typeof createSessionResponseSchema>

@@ -1,5 +1,20 @@
 import type { WritingSession, SessionSummary } from "../schemas/workspace.schema"
 
+let sessionCounter = 4
+
+export function buildMockSession(overrides?: Partial<SessionSummary>): SessionSummary {
+  sessionCounter += 1
+  return {
+    id: `session-${String(sessionCounter).padStart(3, "0")}`,
+    title: `Untitled — ${new Date().toISOString().slice(0, 10)}`,
+    topic: "",
+    previewSnippet: "",
+    thumbnailType: "lyrics",
+    lastModifiedAt: new Date().toISOString(),
+    ...overrides,
+  }
+}
+
 export const mockSession: WritingSession = {
   id: "mock-session-1",
   title: "Bag-ong Awit",

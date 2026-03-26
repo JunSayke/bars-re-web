@@ -6,4 +6,6 @@ export type {
   WritingSession,
   SaveDraftPayload,
   SaveResult,
+  CreateSessionPayload,
+  CreateSessionResponse,
 } from "../schemas/workspace.schema"

@@ -1,5 +1,5 @@
 import { http, HttpResponse } from "msw"
-import { mockSession, mockSessions } from "./workspace.fixtures"
+import { buildMockSession, mockSession, mockSessions } from "./workspace.fixtures"
 import type { SessionSummary } from "../schemas/workspace.schema"
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
@@ -36,5 +36,15 @@ export const workspaceHandlers = [
     const { id } = params as { id: string }
     sessions = sessions.filter((s) => s.id !== id)
     return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.post(`${BASE}/sessions`, async ({ request }) => {
+    if (sessions.length >= 100) {
+      return HttpResponse.json({ message: "Session limit reached" }, { status: 429 })
+    }
+    const { title, topic } = (await request.json()) as { title: string; topic?: string }
+    const newSession = buildMockSession({ title, topic: topic ?? "" })
+    sessions.push(newSession)
+    return HttpResponse.json(newSession, { status: 201 })
   }),
 ]

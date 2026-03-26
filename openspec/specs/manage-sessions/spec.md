@@ -25,6 +25,15 @@ The system SHALL navigate the user to the editor page when they click on a sessi
 
 ---
 
+### Requirement: New Session button opens creation dialog
+The system SHALL open the New Rap Session dialog when the user clicks the "New Session" button on the Workspaces page, instead of navigating directly to the editor.
+
+#### Scenario: Button click opens dialog
+- **WHEN** the user clicks the "New Session" button on the Workspaces page
+- **THEN** the system opens the New Rap Session modal dialog instead of navigating to `/workspaces/editor`
+
+---
+
 ### Requirement: Rename session
 The system SHALL allow the user to rename a session via a dialog triggered from the session overflow menu.
 
