@@ -1,10 +1,4 @@
+"use client"
 
-export const metadata = {
-  title: "Workspace - Bisaya AI Rap System",
-};
+export { EditorPage as default } from "@/modules/workspace/components/EditorPage"
 
-export default function EditorWorkspacePage() {
-  return (
-    <div>Workspace Editor Page</div>
-  );
-}

@@ -1,0 +1,296 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+import { useGetSessionQuery } from "../hooks/useGetSessionQuery"
+import { useSaveDraftMutation } from "../hooks/useSaveDraftMutation"
+import type { Bar, SectionType } from "../schemas/workspace.schema"
+import type { SaveStatus } from "./atoms/AutoSaveStatusIndicator"
+import { AutoSaveStatusIndicator } from "./atoms/AutoSaveStatusIndicator"
+import type { SectionData } from "./organisms/BarsEditor"
+import { BarsEditor } from "./organisms/BarsEditor"
+import { EditorTopNav } from "./organisms/EditorTopNav"
+import { EditorShell } from "./templates/EditorShell"
+
+const DEFAULT_SESSION_ID = "mock-session-1"
+
+function groupBars(bars: Bar[]): SectionData[] {
+  const map = new Map<string, Bar[]>()
+  const sectionFirstOrder = new Map<string, number>()
+
+  for (const bar of bars) {
+    const list = map.get(bar.section) ?? []
+    list.push(bar)
+    map.set(bar.section, list)
+
+    if (!sectionFirstOrder.has(bar.section) || bar.order < sectionFirstOrder.get(bar.section)!) {
+      sectionFirstOrder.set(bar.section, bar.order)
+    }
+  }
+
+  const sorted = [...map.entries()].sort(
+    ([a], [b]) => (sectionFirstOrder.get(a) ?? 0) - (sectionFirstOrder.get(b) ?? 0)
+  )
+
+  return sorted.map(([key, sectionBars]) => ({
+    key,
+    label: key
+      .replace(/-?(\d+)$/, " $1")
+      .replace(/^(\w)/, (c) => c.toUpperCase())
+      .toUpperCase(),
+    bars: [...sectionBars].sort((a, b) => a.order - b.order),
+  }))
+}
+
+function countWords(bars: Bar[]): number {
+  return bars.reduce((total, bar) => {
+    const words = bar.text.trim().split(/\s+/).filter(Boolean)
+    return total + words.length
+  }, 0)
+}
+
+function generateId() {
+  return Math.random().toString(36).slice(2, 10)
+}
+
+export function EditorPage() {
+  const sessionId = DEFAULT_SESSION_ID
+  const { session, isLoading, isError } = useGetSessionQuery(sessionId)
+  const { mutate: saveMutate, isPending, isError: isSaveError, isSuccess: isSaveSuccess } =
+    useSaveDraftMutation(sessionId)
+
+  const [bars, setBars] = useState<Bar[]>([])
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle")
+  const barsRef = useRef<Bar[]>([])
+  const isAtWordLimitRef = useRef(false)
+  // Tracks which bar ID should receive focus after a keyboard-driven add/remove
+  const [focusBarId, setFocusBarId] = useState<string | null>(null)
+
+  // Populate bars from loaded session; seed with one empty bar if session has none
+  useEffect(() => {
+    if (session) {
+      if (session.bars.length === 0) {
+        setBars([{ id: generateId(), text: "", section: "verse-1", order: 0 }])
+      } else {
+        setBars(session.bars)
+      }
+    }
+  }, [session])
+
+  // Sync save status from mutation state
+  useEffect(() => {
+    if (isPending) setSaveStatus("saving")
+    else if (isSaveSuccess) setSaveStatus("saved")
+    else if (isSaveError) setSaveStatus("error")
+  }, [isPending, isSaveSuccess, isSaveError])
+
+  const wordCount = countWords(bars)
+  const isAtWordLimit = wordCount >= 1000
+
+  // Keep refs current so the 30s interval always reads latest values
+  useEffect(() => { barsRef.current = bars }, [bars])
+  useEffect(() => { isAtWordLimitRef.current = isAtWordLimit }, [isAtWordLimit])
+
+  // 1s debounce auto-save
+  useEffect(() => {
+    if (!session || bars.length === 0 || isAtWordLimit) return
+    const timer = setTimeout(() => {
+      saveMutate({ bars })
+    }, 1_000)
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bars])
+
+  // 30s ceiling auto-save — uses refs to avoid stale closure
+  useEffect(() => {
+    if (!session) return
+    const interval = setInterval(() => {
+      if (isAtWordLimitRef.current || !barsRef.current.length) return
+      saveMutate({ bars: barsRef.current })
+    }, 30_000)
+    return () => clearInterval(interval)
+  }, [session, saveMutate])
+
+  const handleBarChange = (barId: string, text: string) => {
+    setBars((prev) => prev.map((b) => (b.id === barId ? { ...b, text } : b)))
+  }
+
+  const handleAddBar = (afterBarId: string) => {
+    // Generate ID here so we can set focusBarId before the state update (11.4)
+    const newId = generateId()
+    setFocusBarId(newId)
+    setBars((prev) => {
+      const idx = prev.findIndex((b) => b.id === afterBarId)
+      if (idx === -1) return prev
+
+      const ref = prev[idx]
+      const newBar: Bar = {
+        id: newId,
+        text: "",
+        section: ref.section,
+        order: ref.order + 0.5,
+      }
+
+      const updated = [...prev.slice(0, idx + 1), newBar, ...prev.slice(idx + 1)]
+      // Re-normalise order
+      return updated.map((b, i) => ({ ...b, order: i }))
+    })
+  }
+
+  const handleRemoveBar = (barId: string) => {
+    // Determine focus target before mutating state (bars are stored in order)
+    const idx = bars.findIndex((b) => b.id === barId)
+    if (idx > 0) {
+      // 11.5: move caret to the bar immediately above
+      setFocusBarId(bars[idx - 1].id)
+    } else if (bars.length > 1) {
+      // 11.6: no bar above — move caret to the bar below
+      setFocusBarId(bars[1].id)
+    } else {
+      // 11.7: last bar globally — section will disappear, no caret target
+      setFocusBarId(null)
+    }
+
+    setBars((prev) => {
+      // 11.7: allow removing the very last bar (section cleanup is implicit via groupBars)
+      const updated = prev.filter((b) => b.id !== barId)
+      return updated.map((b, i) => ({ ...b, order: i }))
+    })
+  }
+
+  const handleSectionTypeChange = (sectionKey: string, newType: SectionType) => {
+    const numberSuffix = sectionKey.match(/-?(\d+)$/)?.[1]
+    const newKey = numberSuffix ? `${newType}-${numberSuffix}` : newType
+    setBars((prev) =>
+      prev.map((b) => (b.section === sectionKey ? { ...b, section: newKey } : b))
+    )
+  }
+
+  const handleAddSection = (afterSectionKey: string) => {
+    setBars((prev) => {
+      const existingKeys = [...new Set(prev.map((b) => b.section))]
+      const verseNumbers = existingKeys
+        .map((k) => k.match(/^verse-(\d+)$/))
+        .filter(Boolean)
+        .map((m) => Number(m![1]))
+      const nextVerseNum = verseNumbers.length > 0 ? Math.max(...verseNumbers) + 1 : 1
+      const newSectionKey = `verse-${nextVerseNum}`
+
+      // Insert one empty bar after the last bar of afterSectionKey
+      const lastBarIdx = prev.reduce((maxIdx, b, i) =>
+        b.section === afterSectionKey ? i : maxIdx, -1)
+
+      const insertAt = lastBarIdx === -1 ? prev.length : lastBarIdx + 1
+      const newBar: Bar = {
+        id: generateId(),
+        text: "",
+        section: newSectionKey,
+        order: insertAt,
+      }
+
+      const updated = [
+        ...prev.slice(0, insertAt),
+        newBar,
+        ...prev.slice(insertAt),
+      ]
+      return updated.map((b, i) => ({ ...b, order: i }))
+    })
+  }
+
+  const handleMoveSection = (sectionKey: string, direction: "up" | "down") => {
+    const currentSections = groupBars(bars)
+    const idx = currentSections.findIndex((s) => s.key === sectionKey)
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1
+    if (swapIdx < 0 || swapIdx >= currentSections.length) return
+
+    const reordered = [...currentSections]
+    const temp = reordered[idx]
+    reordered[idx] = reordered[swapIdx]
+    reordered[swapIdx] = temp
+
+    const newBars: Bar[] = []
+    let order = 0
+    for (const section of reordered) {
+      for (const bar of section.bars) {
+        newBars.push({ ...bar, order: order++ })
+      }
+    }
+    setBars(newBars)
+  }
+
+  const handleRemoveSection = (sectionKey: string) => {
+    setBars((prev) => {
+      const sectionCount = new Set(prev.map((b) => b.section)).size
+      if (sectionCount <= 1) return prev
+      const updated = prev.filter((b) => b.section !== sectionKey)
+      return updated.map((b, i) => ({ ...b, order: i }))
+    })
+  }
+
+  if (isLoading) {
+    return (
+      <EditorShell
+        topNav={<EditorTopNav sessionTitle="Loading…" />}
+      >
+        <div className="flex flex-col gap-4 animate-pulse">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-8 rounded bg-secondary/60" />
+          ))}
+        </div>
+      </EditorShell>
+    )
+  }
+
+  if (isError) {
+    return (
+      <EditorShell
+        topNav={<EditorTopNav sessionTitle="Error" />}
+      >
+        <div className="flex flex-col items-center gap-4 py-16 text-center">
+          <p className="text-muted-foreground text-sm">Failed to load session.</p>
+          <button
+            type="button"
+            className="text-xs underline text-primary"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </button>
+        </div>
+      </EditorShell>
+    )
+  }
+
+  const sections = groupBars(bars)
+
+  return (
+    <EditorShell
+      topNav={
+        <EditorTopNav sessionTitle={session?.title ?? ""} />
+      }
+    >
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          {isAtWordLimit && (
+            <span className="text-xs text-destructive font-medium">
+              Word limit reached — save blocked
+            </span>
+          )}
+          <div className="ml-auto">
+            <AutoSaveStatusIndicator status={saveStatus} />
+          </div>
+        </div>
+        <BarsEditor
+          sections={sections}
+          wordCount={wordCount}
+          onBarChange={handleBarChange}
+          onAddBar={handleAddBar}
+          onRemoveBar={handleRemoveBar}
+          onSectionTypeChange={handleSectionTypeChange}
+          onAddSection={handleAddSection}
+          onRemoveSection={handleRemoveSection}
+          onMoveSection={handleMoveSection}
+          focusBarId={focusBarId}
+        />
+      </div>
+    </EditorShell>
+  )
+}

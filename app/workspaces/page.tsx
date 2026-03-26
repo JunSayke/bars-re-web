@@ -1,5 +1,1 @@
-export default function WorkspacesPage() {
-  return (
-    <div>Workspaces</div>
-  )
-}
+export { WorkspacesPage as default } from "@/modules/workspace/components/WorkspacesPage"
