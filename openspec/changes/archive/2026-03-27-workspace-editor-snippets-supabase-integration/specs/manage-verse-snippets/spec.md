@@ -1,10 +1,6 @@
-# manage-verse-snippets
+## ADDED Requirements
 
-## Purpose
-
-Add support for an in-editor Verse Snippets workspace panel with search, filter, CRUD, insert, and draggable/resizable behavior, plus MSW mock API handlers.
-
-## Requirement: Verse snippets are persisted to Supabase and survive page reloads
+### Requirement: Verse snippets are persisted to Supabase and survive page reloads
 The system SHALL persist all snippet CRUD operations to Supabase using the authenticated user's identity. Snippets SHALL be stored in a `snippets` table scoped to the user via Row Level Security. Upon page reload, the system SHALL retrieve the user's saved snippets from Supabase and display them in the Verse Snippets panel.
 
 #### Scenario: Snippets persist after page reload
@@ -21,49 +17,7 @@ The system SHALL persist all snippet CRUD operations to Supabase using the authe
 
 ---
 
-## Requirements
-
-### Requirement: Toggle Verse Snippets panel from workspace window menu
-The editor workspace SHALL include a workspace window menu button (bottom-right corner) that opens a floating checklist panel. The checklist SHALL include a "Snippets" toggle. Checking "Snippets" SHALL open the Verse Snippets panel; unchecking it SHALL close the panel.
-
-#### Scenario: Workspace window menu opens
-- **WHEN** the user clicks the workspace window menu button (bottom-right corner of the editor page)
-- **THEN** a floating checklist panel SHALL appear with toggleable workspace tools including "Snippets"
-
-#### Scenario: Snippets panel opens from menu
-- **WHEN** the "Snippets" checkbox in the workspace window menu is checked
-- **THEN** the Verse Snippets panel SHALL appear as a floating window overlaid on the editor
-
-#### Scenario: Snippets panel closes from menu
-- **WHEN** the "Snippets" checkbox is unchecked
-- **THEN** the Verse Snippets panel SHALL be hidden from the editor view
-
----
-
-### Requirement: Display verse snippets list with search and tag filter
-The Verse Snippets panel SHALL display all of the user's snippets as a scrollable list. The panel SHALL include a text search input and a tag filter row (All, Chorus, Verse, Hook, Freestyle, Bridge). The panel SHALL display a count badge showing `N / 200 snippets`.
-
-#### Scenario: Panel renders snippet list
-- **WHEN** the Verse Snippets panel is open
-- **THEN** it SHALL display up to 80 snippets sorted by most recently modified, each showing: title, content preview (truncated skeleton lines), and tag badges
-
-#### Scenario: Search filters snippets by keyword
-- **WHEN** the user types in the search input and presses the Search button (or Enter)
-- **THEN** the snippet list SHALL be filtered to show only snippets whose content contains the search keyword (case-insensitive)
-
-#### Scenario: Tag filter narrows snippet list
-- **WHEN** the user clicks a tag button (e.g., "Chorus")
-- **THEN** only snippets tagged with that tag SHALL be shown; clicking "All" removes the filter
-
-#### Scenario: Snippet count badge displays correctly
-- **WHEN** the panel is open
-- **THEN** a badge SHALL show the number of currently visible snippets relative to the user's total (e.g., `80 / 200 snippets`)
-
-#### Scenario: Empty state when no snippets match
-- **WHEN** the search or tag filter returns no results
-- **THEN** the panel SHALL display an empty state message (e.g., "No snippets found")
-
----
+## MODIFIED Requirements
 
 ### Requirement: Create a new verse snippet
 The Verse Snippets panel SHALL provide a "+ New Snippet" button at the bottom of the panel. Clicking it SHALL open a dialog where the user can enter a title, freeform content, and optional tags. On save, the snippet SHALL be persisted to Supabase and added to the list.
@@ -117,36 +71,6 @@ Each snippet card SHALL include a Delete button. Clicking it SHALL immediately r
 #### Scenario: Delete failure restores snippet
 - **WHEN** the Supabase delete returns an error
 - **THEN** the snippet SHALL be restored to the list and a toast error SHALL be displayed
-
----
-
-### Requirement: Insert snippet content into active session
-Each snippet card SHALL include an "Insert" button. Clicking it SHALL append the snippet's content as a new bar (or multiple bars, one per line) to the currently active section in the bars editor.
-
-#### Scenario: Insert appends snippet content to current section
-- **WHEN** the user clicks "Insert" on a snippet card
-- **THEN** each non-empty line of the snippet's content SHALL be inserted as a new bar appended to the last active section in the bars editor
-
-#### Scenario: Insert when no bars are focused uses last section
-- **WHEN** no bar is currently focused and the user clicks "Insert"
-- **THEN** the snippet content lines SHALL be appended to the last section in the current bars list
-
----
-
-### Requirement: Draggable and resizable floating panel
-The Verse Snippets panel SHALL be implemented as a floating window that the user can drag (by the header) and resize (by the bottom-right corner handle) anywhere within the viewport.
-
-#### Scenario: Panel can be dragged by header
-- **WHEN** the user presses and drags the panel header
-- **THEN** the panel SHALL follow the pointer and reposition within the viewport bounds
-
-#### Scenario: Panel position clamped to viewport
-- **WHEN** the user drags the panel toward the viewport edge
-- **THEN** the panel SHALL be clamped so it does not move fully off-screen (at least the header remains visible)
-
-#### Scenario: Panel can be resized from bottom-right handle
-- **WHEN** the user drags the bottom-right resize handle
-- **THEN** the panel width and height SHALL update according to the pointer delta with a minimum size of 300×400 px
 
 ---
 

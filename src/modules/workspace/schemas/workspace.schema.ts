@@ -10,10 +10,18 @@ export const barSchema = z.object({
   order: z.number().int().nonnegative(),
 })
 
+export const beatSchema = z.object({
+  beatFileId: z.string(),
+  beatStorageUrl: z.string(),
+  bpm: z.number().nullable(),
+  fileName: z.string(),
+})
+
 export const writingSessionSchema = z.object({
   id: z.string(),
   title: z.string(),
   bars: z.array(barSchema),
+  beat: beatSchema.nullable().optional(),
 })
 
 export const saveDraftPayloadSchema = z.object({
@@ -50,6 +58,7 @@ export const createSessionResponseSchema = sessionSummarySchema
 
 export type SectionType = z.infer<typeof sectionTypeSchema>
 export type Bar = z.infer<typeof barSchema>
+export type Beat = z.infer<typeof beatSchema>
 export type WritingSession = z.infer<typeof writingSessionSchema>
 export type SaveDraftPayload = z.infer<typeof saveDraftPayloadSchema>
 export type SaveResult = z.infer<typeof saveResultSchema>

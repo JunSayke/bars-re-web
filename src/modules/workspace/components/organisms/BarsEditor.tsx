@@ -14,6 +14,7 @@ interface BarsEditorProps {
   onBarChange: (barId: string, text: string) => void
   onAddBar: (afterBarId: string) => void
   onRemoveBar: (barId: string) => void
+  onPasteLines: (atBarId: string, lines: string[]) => void
   onSectionTypeChange: (sectionKey: string, newType: SectionType) => void
   onAddSection: (afterSectionKey: string) => void
   onRemoveSection: (sectionKey: string) => void
@@ -28,6 +29,7 @@ export function BarsEditor({
   onBarChange,
   onAddBar,
   onRemoveBar,
+  onPasteLines,
   onSectionTypeChange,
   onAddSection,
   onRemoveSection,
@@ -36,13 +38,14 @@ export function BarsEditor({
 }: BarsEditorProps) {
   const totalBarCount = sections.reduce((sum, s) => sum + s.bars.length, 0)
 
-  let globalOffset = 0
+  const sectionOffsets = sections.map((_, idx) =>
+    sections.slice(0, idx).reduce((sum, s) => sum + s.bars.length, 0)
+  )
 
   return (
     <div className="flex flex-col gap-6">
       {sections.map((section, idx) => {
-        const offset = globalOffset
-        globalOffset += section.bars.length
+        const offset = sectionOffsets[idx]
         return (
           <SectionGroup
             key={section.key}
@@ -53,6 +56,7 @@ export function BarsEditor({
             onBarChange={onBarChange}
             onAddBar={onAddBar}
             onRemoveBar={onRemoveBar}
+            onPasteLines={onPasteLines}
             totalBarCount={totalBarCount}
             onSectionTypeChange={onSectionTypeChange}
             onAddSection={onAddSection}

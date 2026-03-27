@@ -1,9 +1,11 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { useGetSessionQuery } from "../hooks/useGetSessionQuery"
 import { useSaveDraftMutation } from "../hooks/useSaveDraftMutation"
+import { useBeatPlayer } from "../hooks/useBeatPlayer"
 import { useSnippetsQuery } from "../hooks/useSnippetsQuery"
 import { useCreateSnippetMutation } from "../hooks/useCreateSnippetMutation"
 import { useUpdateSnippetMutation } from "../hooks/useUpdateSnippetMutation"
@@ -21,8 +23,6 @@ import { SnippetList } from "./organisms/SnippetList"
 import { SnippetFormDialog } from "./molecules/SnippetFormDialog"
 import { EditorShell } from "./templates/EditorShell"
 import { SnippetsPanel } from "./templates/SnippetsPanel"
-
-const DEFAULT_SESSION_ID = "mock-session-1"
 
 function groupBars(bars: Bar[]): SectionData[] {
   const map = new Map<string, Bar[]>()
@@ -64,10 +64,12 @@ function generateId() {
 }
 
 export function EditorPage() {
-  const sessionId = DEFAULT_SESSION_ID
+  const searchParams = useSearchParams()
+  const sessionId = searchParams.get("id") ?? ""
   const { session, isLoading, isError } = useGetSessionQuery(sessionId)
   const { mutate: saveMutate, isPending, isError: isSaveError, isSuccess: isSaveSuccess } =
     useSaveDraftMutation(sessionId)
+  const beatPlayer = useBeatPlayer(sessionId)
 
   // ── Snippet data hooks ────────────────────────────────────────────────────
   const { snippets, isLoading: snippetsLoading } = useSnippetsQuery()
@@ -143,6 +145,27 @@ export function EditorPage() {
     })
   }
 
+  // Seed beat player on mount when session has a persisted beat
+  const initializedBeatIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (
+      session?.beat &&
+      session.beat.beatFileId !== initializedBeatIdRef.current
+    ) {
+      initializedBeatIdRef.current = session.beat.beatFileId
+      beatPlayer.loadUrl(session.beat.beatStorageUrl, {
+        fileName: session.beat.fileName,
+        bpm: session.beat.bpm,
+      })
+    }
+    return () => {
+      // Reset so StrictMode re-mounts (and real unmount/remount) re-call loadUrl
+      // with the fresh audio element created by useBeatPlayer's initialization effect
+      initializedBeatIdRef.current = null
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.beat?.beatFileId])
+
   const [bars, setBars] = useState<Bar[]>([])
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle")
   const barsRef = useRef<Bar[]>([])
@@ -197,6 +220,28 @@ export function EditorPage() {
 
   const handleBarChange = (barId: string, text: string) => {
     setBars((prev) => prev.map((b) => (b.id === barId ? { ...b, text } : b)))
+  }
+
+  const handlePasteLines = (atBarId: string, lines: string[]) => {
+    setBars((prev) => {
+      const idx = prev.findIndex((b) => b.id === atBarId)
+      if (idx === -1) return prev
+      const [firstLine, ...rest] = lines
+      const updatedBar = { ...prev[idx], text: firstLine }
+      const newBars = rest.map((text, i) => ({
+        id: generateId(),
+        text,
+        section: prev[idx].section,
+        order: prev[idx].order + i + 1,
+      }))
+      const updated = [
+        ...prev.slice(0, idx),
+        updatedBar,
+        ...newBars,
+        ...prev.slice(idx + 1),
+      ]
+      return updated.map((b, i) => ({ ...b, order: i }))
+    })
   }
 
   const handleAddBar = (afterBarId: string) => {
@@ -352,7 +397,7 @@ export function EditorPage() {
         topNav={
           <EditorTopNav sessionTitle={session?.title ?? ""} />
         }
-        bottomBar={<BeatPlayerBar sessionId={sessionId} />}
+        bottomBar={<BeatPlayerBar {...beatPlayer} />}
       >
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
@@ -361,7 +406,18 @@ export function EditorPage() {
                 Word limit reached — save blocked
               </span>
             )}
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  const allText = bars.map((b) => b.text).join("\n")
+                  navigator.clipboard.writeText(allText).then(() => toast.success("Copied to clipboard"))
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Copy all bars to clipboard"
+              >
+                Copy All
+              </button>
               <AutoSaveStatusIndicator status={saveStatus} />
             </div>
           </div>
@@ -371,6 +427,7 @@ export function EditorPage() {
             onBarChange={handleBarChange}
             onAddBar={handleAddBar}
             onRemoveBar={handleRemoveBar}
+            onPasteLines={handlePasteLines}
             onSectionTypeChange={handleSectionTypeChange}
             onAddSection={handleAddSection}
             onRemoveSection={handleRemoveSection}

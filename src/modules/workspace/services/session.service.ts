@@ -23,8 +23,14 @@ async function getAuthUser(): Promise<string> {
 
 function toPreviewSnippet(barContent: string | null): string {
   if (!barContent) return ""
-  const first = barContent.split("\n").find((l) => l.trim() !== "") ?? ""
-  return first.length > 100 ? first.slice(0, 97) + "..." : first
+  try {
+    const bars = JSON.parse(barContent) as Array<{ text?: string }>
+    if (!Array.isArray(bars)) return ""
+    const firstText = bars.find((b) => b?.text?.trim())?.text?.trim() ?? ""
+    return firstText.length > 100 ? firstText.slice(0, 97) + "..." : firstText
+  } catch {
+    return ""
+  }
 }
 
 function toThumbnailType(hasBeat: boolean): "lyrics" | "beat-linked" {

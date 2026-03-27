@@ -14,6 +14,7 @@ interface SectionGroupProps {
   onBarChange: (barId: string, text: string) => void
   onAddBar: (afterBarId: string) => void
   onRemoveBar: (barId: string) => void
+  onPasteLines: (atBarId: string, lines: string[]) => void
   totalBarCount: number
   onSectionTypeChange: (sectionKey: string, newType: SectionType) => void
   onAddSection: (afterSectionKey: string) => void
@@ -34,6 +35,7 @@ export function SectionGroup({
   onBarChange,
   onAddBar,
   onRemoveBar,
+  onPasteLines,
   totalBarCount,
   onSectionTypeChange,
   onAddSection,
@@ -124,6 +126,7 @@ export function SectionGroup({
             onChange={(text) => onBarChange(bar.id, text)}
             onAddAfter={() => onAddBar(bar.id)}
             onRemove={() => onRemoveBar(bar.id)}
+            onPasteLines={(lines) => onPasteLines(bar.id, lines)}
             isRemoveDisabled={totalBarCount <= 1}
             isFocused={bar.id === focusBarId}
           />

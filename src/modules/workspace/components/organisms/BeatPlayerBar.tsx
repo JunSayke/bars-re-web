@@ -3,7 +3,7 @@
 import { useRef } from "react"
 import { toast } from "sonner"
 import { FileMusic } from "lucide-react"
-import { useBeatPlayer } from "../../hooks/useBeatPlayer"
+import type { UseBeatPlayerReturn } from "../../hooks/useBeatPlayer"
 import { BeatTransportControls } from "../molecules/BeatTransportControls"
 import { BpmBadge } from "../atoms/BpmBadge"
 import { BeatProgressBar } from "../atoms/BeatProgressBar"
@@ -12,10 +12,20 @@ const ACCEPTED_TYPES = ["audio/mpeg", "audio/wav", "audio/ogg", "audio/x-wav"]
 const ACCEPTED_EXTENSIONS = [".mp3", ".wav", ".ogg"]
 const MAX_SIZE_BYTES = 20 * 1024 * 1024 // 20 MB
 
-export function BeatPlayerBar({ sessionId }: { sessionId: string }) {
+export function BeatPlayerBar({
+  loadFile,
+  togglePlay,
+  skipBack,
+  skipForward,
+  seek,
+  isPlaying,
+  isLoadingAudio,
+  currentTime,
+  duration,
+  bpm,
+  fileName,
+}: UseBeatPlayerReturn) {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { loadFile, togglePlay, skipBack, skipForward, seek, isPlaying, currentTime, duration, bpm, fileName } =
-    useBeatPlayer(sessionId)
 
   const beatLoaded = fileName !== null
 
@@ -87,6 +97,7 @@ export function BeatPlayerBar({ sessionId }: { sessionId: string }) {
           <div className="flex-1 flex justify-center">
             <BeatTransportControls
               isPlaying={isPlaying}
+              disabled={isLoadingAudio}
               onTogglePlay={togglePlay}
               onSkipBack={skipBack}
               onSkipForward={skipForward}
@@ -95,7 +106,7 @@ export function BeatPlayerBar({ sessionId }: { sessionId: string }) {
 
           {/* Right: BPM + progress */}
           <div className="flex items-center gap-3">
-            {bpm !== null && <BpmBadge bpm={bpm} />}
+            <BpmBadge bpm={bpm} />
             <BeatProgressBar currentTime={currentTime} duration={duration} onSeek={seek} />
           </div>
         </>

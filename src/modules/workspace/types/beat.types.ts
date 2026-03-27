@@ -1,5 +1,1 @@
-export interface BeatRecord {
-  beatUrl: string
-  bpm: number | null
-  fileName: string
-}
+export type { Beat } from "../schemas/workspace.schema"

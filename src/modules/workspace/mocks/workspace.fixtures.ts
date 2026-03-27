@@ -1,4 +1,11 @@
-import type { WritingSession, SessionSummary } from "../schemas/workspace.schema"
+import type { Beat, WritingSession, SessionSummary } from "../schemas/workspace.schema"
+
+export const mockBeat: Beat = {
+  beatFileId: "mock-beat-1",
+  beatStorageUrl: "<mock-url>",
+  bpm: 120,
+  fileName: "mock.mp3",
+}
 
 let sessionCounter = 4
 

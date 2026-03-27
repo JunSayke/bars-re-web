@@ -1,7 +1,7 @@
 "use client"
 
 import { useMutation } from "@tanstack/react-query"
-import { saveDraft } from "../services/workspace.service"
+import { saveDraft } from "../services/editor.service"
 import type { SaveDraftPayload, SaveResult } from "../schemas/workspace.schema"
 
 export function useSaveDraftMutation(sessionId: string) {
@@ -10,7 +10,7 @@ export function useSaveDraftMutation(sessionId: string) {
     Error,
     SaveDraftPayload
   >({
-    mutationFn: (payload) => saveDraft(sessionId, payload),
+    mutationFn: (payload) => saveDraft(sessionId, payload.bars),
   })
 
   return { mutate, isPending, isError, isSuccess }

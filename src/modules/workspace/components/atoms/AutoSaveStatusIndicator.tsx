@@ -9,18 +9,18 @@ interface AutoSaveStatusIndicatorProps {
 }
 
 export function AutoSaveStatusIndicator({ status }: AutoSaveStatusIndicatorProps) {
-  const [visible, setVisible] = useState(true)
+  const [savedVisible, setSavedVisible] = useState(true)
 
   useEffect(() => {
-    if (status === "saved") {
-      setVisible(true)
-      const timer = setTimeout(() => setVisible(false), 2000)
-      return () => clearTimeout(timer)
+    if (status !== "saved") return
+    const timer = setTimeout(() => setSavedVisible(false), 2000)
+    return () => {
+      clearTimeout(timer)
+      setSavedVisible(true)
     }
-    setVisible(true)
   }, [status])
 
-  if (status === "idle" || (status === "saved" && !visible)) return null
+  if (status === "idle" || (status === "saved" && !savedVisible)) return null
 
   const label =
     status === "saving"

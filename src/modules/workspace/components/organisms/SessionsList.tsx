@@ -14,7 +14,7 @@ function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
       <p className="text-sm font-medium text-muted-foreground">You have no saved sessions.</p>
-      <p className="mt-1 text-xs text-muted-foreground">Click 'New Session' to start writing.</p>
+      <p className="mt-1 text-xs text-muted-foreground">Click &apos;New Session&apos; to start writing.</p>
     </div>
   )
 }

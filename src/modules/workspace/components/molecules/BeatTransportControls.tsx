@@ -2,6 +2,7 @@ import { Pause, Play, SkipBack, SkipForward } from "lucide-react"
 
 interface BeatTransportControlsProps {
   isPlaying: boolean
+  disabled?: boolean
   onTogglePlay: () => void
   onSkipBack: () => void
   onSkipForward: () => void
@@ -9,6 +10,7 @@ interface BeatTransportControlsProps {
 
 export function BeatTransportControls({
   isPlaying,
+  disabled,
   onTogglePlay,
   onSkipBack,
   onSkipForward,
@@ -18,7 +20,8 @@ export function BeatTransportControls({
       <button
         type="button"
         onClick={onSkipBack}
-        className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+        disabled={disabled}
+        className="p-1 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         aria-label="Skip back"
       >
         <SkipBack className="h-4 w-4" />
@@ -27,7 +30,8 @@ export function BeatTransportControls({
       <button
         type="button"
         onClick={onTogglePlay}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+        disabled={disabled}
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         aria-label={isPlaying ? "Pause" : "Play"}
       >
         {isPlaying ? (
@@ -40,7 +44,8 @@ export function BeatTransportControls({
       <button
         type="button"
         onClick={onSkipForward}
-        className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+        disabled={disabled}
+        className="p-1 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         aria-label="Skip forward"
       >
         <SkipForward className="h-4 w-4" />

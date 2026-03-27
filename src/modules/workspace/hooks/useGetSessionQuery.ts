@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { workspaceKeys } from "./queryKeys"
-import { getSession } from "../services/workspace.service"
+import { getSession } from "../services/editor.service"
 import type { WritingSession } from "../schemas/workspace.schema"
 
 export function useGetSessionQuery(sessionId: string) {

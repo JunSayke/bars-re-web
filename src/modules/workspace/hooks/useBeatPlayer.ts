@@ -5,6 +5,7 @@ import { useImportBeatMutation } from "./useImportBeatMutation"
 
 interface BeatPlayerState {
   isPlaying: boolean
+  isLoadingAudio: boolean
   currentTime: number
   duration: number
   bpm: number | null
@@ -13,6 +14,7 @@ interface BeatPlayerState {
 
 export interface UseBeatPlayerReturn extends BeatPlayerState {
   loadFile: (file: File) => void
+  loadUrl: (url: string, metadata: { fileName: string; bpm: number | null }) => void
   togglePlay: () => void
   skipBack: () => void
   skipForward: () => void
@@ -27,6 +29,7 @@ export function useBeatPlayer(sessionId: string): UseBeatPlayerReturn {
 
   const [state, setState] = useState<BeatPlayerState>({
     isPlaying: false,
+    isLoadingAudio: false,
     currentTime: 0,
     duration: 0,
     bpm: null,
@@ -49,15 +52,25 @@ export function useBeatPlayer(sessionId: string): UseBeatPlayerReturn {
     const onEnded = () => {
       setState((prev) => ({ ...prev, isPlaying: false, currentTime: 0 }))
     }
+    const onCanPlay = () => {
+      setState((prev) => ({ ...prev, isLoadingAudio: false }))
+    }
+    const onError = () => {
+      setState((prev) => ({ ...prev, isLoadingAudio: false }))
+    }
 
     audio.addEventListener("timeupdate", onTimeUpdate)
     audio.addEventListener("durationchange", onDurationChange)
     audio.addEventListener("ended", onEnded)
+    audio.addEventListener("canplay", onCanPlay)
+    audio.addEventListener("error", onError)
 
     return () => {
       audio.removeEventListener("timeupdate", onTimeUpdate)
       audio.removeEventListener("durationchange", onDurationChange)
       audio.removeEventListener("ended", onEnded)
+      audio.removeEventListener("canplay", onCanPlay)
+      audio.removeEventListener("error", onError)
       audio.pause()
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current)
@@ -85,6 +98,7 @@ export function useBeatPlayer(sessionId: string): UseBeatPlayerReturn {
       setState((prev) => ({
         ...prev,
         isPlaying: false,
+        isLoadingAudio: true,
         currentTime: 0,
         duration: 0,
         fileName: file.name,
@@ -99,6 +113,28 @@ export function useBeatPlayer(sessionId: string): UseBeatPlayerReturn {
       })
     },
     [importBeat]
+  )
+
+  const loadUrl = useCallback(
+    (url: string, metadata: { fileName: string; bpm: number | null }) => {
+      const audio = audioRef.current
+      if (!audio) return
+
+      audio.pause()
+      audio.src = url
+      audio.load()
+
+      setState((prev) => ({
+        ...prev,
+        isPlaying: false,
+        isLoadingAudio: true,
+        currentTime: 0,
+        duration: 0,
+        fileName: metadata.fileName,
+        bpm: metadata.bpm,
+      }))
+    },
+    []
   )
 
   const togglePlay = useCallback(() => {
@@ -139,6 +175,7 @@ export function useBeatPlayer(sessionId: string): UseBeatPlayerReturn {
   return {
     ...state,
     loadFile,
+    loadUrl,
     togglePlay,
     skipBack,
     skipForward,
