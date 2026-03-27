@@ -1,0 +1,19 @@
+{
+  "mcp": {
+    "next-devtools": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "next-devtools-mcp@latest"
+      ],
+      "enabled": true,
+      "environment": {}
+    },
+    "supabase": {
+      "type": "remote",
+      "url": "http://localhost:54321/mcp",
+      "enabled": true
+    }
+  }
+}
