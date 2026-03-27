@@ -31,9 +31,6 @@ export function EditorTopNav({ sessionTitle, onSettingsClick }: EditorTopNavProp
             settings
           </span>
         </button>
-        <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground select-none">
-          U
-        </div>
       </div>
     </header>
   )
