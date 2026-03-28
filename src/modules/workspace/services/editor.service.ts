@@ -20,14 +20,23 @@ async function getAuthUser(): Promise<string> {
 }
 
 function deserializeBars(barContent: string | null): Bar[] {
+  if (!barContent) return []
+
+  let parsed: unknown
   try {
-    const parsed = JSON.parse(barContent ?? "[]") as unknown
-    const result = barSchema.array().safeParse(parsed)
-    return result.success ? result.data : []
+    parsed = JSON.parse(barContent)
   } catch {
-    console.warn("Failed to deserialize bars from bar_content")
+    console.warn("Failed to parse bar_content JSON")
     return []
   }
+
+  const result = barSchema.array().safeParse(parsed)
+  if (result.success) return result.data
+
+  // JSON is valid but schema validation failed — data exists but is corrupted
+  throw new Error(
+    `bar_content failed schema validation: ${result.error.message}`
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -59,9 +68,13 @@ export async function getSession(sessionId: string): Promise<WritingSession> {
     | undefined
 
   if (beatFile) {
-    const { data: signedUrlData } = await supabase.storage
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from("beats")
       .createSignedUrl(beatFile.storage_path, 3600)
+
+    if (signedUrlError) {
+      console.warn("Failed to create signed URL for beat:", signedUrlError.message)
+    }
 
     const fileName =
       beatFile.storage_path.split("/").pop()?.replace(/^\d+-/, "") ?? ""
