@@ -13,5 +13,5 @@ export const snippetKeys = {
 export const thesaurusKeys = {
   all: ["thesaurus"] as const,
   lookup: (term: string) => [...thesaurusKeys.all, "lookup", term] as const,
-  rhyme: (term: string) => [...thesaurusKeys.all, "rhyme", term] as const,
+  rhyme: (term: string, page: number) => [...thesaurusKeys.all, "rhyme", term, page] as const,
 }

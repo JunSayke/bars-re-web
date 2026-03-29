@@ -13,7 +13,7 @@ export async function lookupWord(term: string): Promise<WordLookupResult> {
   return handleResponse<WordLookupResult>(res)
 }
 
-export async function findRhymes(term: string): Promise<RhymeResult> {
-  const res = await fetch(`/api/thesaurus/rhyme?query=${encodeURIComponent(term)}`)
+export async function findRhymes(term: string, page = 1): Promise<RhymeResult> {
+  const res = await fetch(`/api/thesaurus/rhyme?query=${encodeURIComponent(term)}&page=${page}`)
   return handleResponse<RhymeResult>(res)
 }

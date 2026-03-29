@@ -4,6 +4,7 @@ import { lookup, fuzzySearch } from "@junsayke/cebuano-thesaurus"
 import type {
   WordLookupResult,
   HomonymEntry,
+  ExampleSentence,
 } from "@/modules/workspace/types/thesaurus.types"
 
 // ThesaurusEntry is not exported by the package; derive it from the return type
@@ -45,11 +46,17 @@ function mapEntry(entry: ThesaurusEntry): WordLookupResult {
     word: sub.headword,
   }))
 
+  const examples: ExampleSentence[] = entry.senses.flatMap(
+    (s) => (s.examples ?? []).map((ex) => ({ cebuano: ex.cebuano, english: ex.english })),
+  )
+
   return {
     word: entry.headword,
     definitions,
     translations,
     homonyms,
+    examples,
+    suggestedWords: [],
   }
 }
 
@@ -69,12 +76,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(mapEntry(entry))
   }
 
-  const fuzzyResults = await fuzzySearch(normalizeQuery(query), 10)
+  const normalizedQuery = normalizeQuery(stripDiacritics(query))
+  let fuzzyResults = await fuzzySearch(normalizedQuery, 10)
+  if (fuzzyResults.length === 0 && normalizedQuery.length > 3) {
+    fuzzyResults = await fuzzySearch(normalizedQuery.slice(0, 3), 20)
+  }
   const result: WordLookupResult = {
     word: query,
     definitions: [],
     translations: [],
-    homonyms: fuzzyResults.map((r) => ({
+    homonyms: [],
+    examples: [],
+    suggestedWords: fuzzyResults.map((r) => ({
       word: r.headword,
       shortDefinition: "fuzzy match",
     })),

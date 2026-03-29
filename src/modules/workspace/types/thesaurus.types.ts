@@ -9,11 +9,18 @@ export interface TranslationEntry {
   translation: string
 }
 
+export interface ExampleSentence {
+  cebuano: string
+  english: string
+}
+
 export interface WordLookupResult {
   word: string
   definitions: string[]
   homonyms: HomonymEntry[]
   translations: TranslationEntry[]
+  examples: ExampleSentence[]
+  suggestedWords: HomonymEntry[]
 }
 
 export interface RhymeCandidate {
@@ -26,4 +33,7 @@ export interface RhymeCandidate {
 export interface RhymeResult {
   query: string
   candidates: RhymeCandidate[]
+  page: number
+  pageSize: number
+  hasNextPage: boolean
 }
