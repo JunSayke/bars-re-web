@@ -180,3 +180,20 @@
   }
 }
 
+@layer utilities {
+  .gradient-text {
+    background: linear-gradient(135deg, #ba9eff 0%, #7050ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+  }
+  .performance-gradient {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7050ff 100%);
+  }
+  .glass-card {
+    background: color-mix(in srgb, var(--card) 60%, transparent);
+    backdrop-filter: blur(12px);
+  }
+}
+
