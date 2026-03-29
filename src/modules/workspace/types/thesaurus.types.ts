@@ -15,3 +15,15 @@ export interface WordLookupResult {
   homonyms: HomonymEntry[]
   translations: TranslationEntry[]
 }
+
+export interface RhymeCandidate {
+  word: string
+  rhymeType: "perfect" | "family" | "additive" | "assonance"
+  score: number
+  syllableCount: number
+}
+
+export interface RhymeResult {
+  query: string
+  candidates: RhymeCandidate[]
+}
