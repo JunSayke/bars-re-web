@@ -23,9 +23,14 @@ code2prompt \
   -e pnpm-lock.yaml \
   -e .github \
   -e .vscode \
+  -e .claude \
+  -e .agents \
+  -e .next \
+  -e CLAUDE.md \
+  -e AGENTS.md \
   -e .env \
   -e structure-architecture.md \
   -e code2prompt.sh \
   -e project.md \
-  -e openspec \
+  -e="openspec/**" \
   -O project.md
