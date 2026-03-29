@@ -24,6 +24,7 @@ import { SnippetFormDialog } from "./molecules/SnippetFormDialog"
 import { EditorShell } from "./templates/EditorShell"
 import { SnippetsPanel } from "./templates/SnippetsPanel"
 import { ThesaurusPanel } from "./templates/ThesaurusPanel"
+import { BeatLinkPanel } from "./templates/BeatLinkPanel"
 
 function groupBars(bars: Bar[]): SectionData[] {
   const map = new Map<string, Bar[]>()
@@ -442,6 +443,10 @@ export function EditorPage() {
 
       {openPanels.has("thesaurus") && (
         <ThesaurusPanel onClose={() => handleTogglePanel("thesaurus")} />
+      )}
+
+      {openPanels.has("beat-link") && (
+        <BeatLinkPanel sessionId={sessionId} onClose={() => handleTogglePanel("beat-link")} />
       )}
 
       {openPanels.has("snippets") && (

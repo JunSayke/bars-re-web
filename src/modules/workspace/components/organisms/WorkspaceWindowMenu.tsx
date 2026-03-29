@@ -4,7 +4,7 @@ const PANEL_OPTIONS = [
   { key: "thesaurus", label: "Thesaurus" },
   { key: "ai-assistant", label: "AI Assistant" },
   { key: "snippets", label: "Snippets" },
-  { key: "library", label: "Library" },
+  { key: "beat-link", label: "Beat Link" },
 ] as const
 
 interface WorkspaceWindowMenuProps {
