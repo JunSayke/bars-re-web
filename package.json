@@ -9,10 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ai-sdk/groq": "^3.0.31",
     "@hookform/resolvers": "^5.2.2",
     "@junsayke/cebuano-thesaurus": "^1.0.0",
     "@supabase/supabase-js": "^2.99.1",
     "@tanstack/react-query": "^5.90.21",
+    "ai": "^6.0.141",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.576.0",
@@ -48,7 +50,9 @@
     ]
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["better-sqlite3"],
+    "onlyBuiltDependencies": [
+      "better-sqlite3"
+    ],
     "overrides": {
       "@types/react": "19.2.14",
       "@types/react-dom": "19.2.3"
