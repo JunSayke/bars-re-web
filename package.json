@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@junsayke/cebuano-thesaurus": "^1.0.0",
     "@supabase/supabase-js": "^2.99.1",
     "@tanstack/react-query": "^5.90.21",
     "class-variance-authority": "^0.7.1",
@@ -47,6 +48,7 @@
     ]
   },
   "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3"],
     "overrides": {
       "@types/react": "19.2.14",
       "@types/react-dom": "19.2.3"

@@ -1,6 +1,4 @@
-import type { WordLookupResult } from "../types/thesaurus.types"
-
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
+import type { WordLookupResult, RhymeResult } from "../types/thesaurus.types"
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -11,6 +9,11 @@ async function handleResponse<T>(res: Response): Promise<T> {
 }
 
 export async function lookupWord(term: string): Promise<WordLookupResult> {
-  const res = await fetch(`${BASE}/thesaurus/lookup?query=${encodeURIComponent(term)}`)
+  const res = await fetch(`/api/thesaurus/lookup?query=${encodeURIComponent(term)}`)
   return handleResponse<WordLookupResult>(res)
+}
+
+export async function findRhymes(term: string): Promise<RhymeResult> {
+  const res = await fetch(`/api/thesaurus/rhyme?query=${encodeURIComponent(term)}`)
+  return handleResponse<RhymeResult>(res)
 }

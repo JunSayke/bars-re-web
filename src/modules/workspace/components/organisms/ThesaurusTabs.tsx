@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { ThesaurusTabButton } from "../atoms/ThesaurusTabButton"
 import { WordLookupTab } from "../molecules/WordLookupTab"
+import { RhymeFinderTab } from "../molecules/RhymeFinderTab"
 
 const TABS = [
   { id: "word-lookup", label: "Word Lookup" },
@@ -14,8 +15,11 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"]
 
+const DISABLED_TABS: TabId[] = ["synonyms", "anagrams", "wordplay"]
+
 export function ThesaurusTabs() {
   const [activeTab, setActiveTab] = useState<TabId>("word-lookup")
+  const [activeWord, setActiveWord] = useState("")
 
   return (
     <div className="flex flex-col h-full">
@@ -26,9 +30,9 @@ export function ThesaurusTabs() {
             key={tab.id}
             label={tab.label}
             isActive={activeTab === tab.id}
-            isDisabled={tab.id !== "word-lookup"}
+            isDisabled={DISABLED_TABS.includes(tab.id)}
             onClick={() => {
-              if (tab.id === "word-lookup") setActiveTab("word-lookup")
+              if (!DISABLED_TABS.includes(tab.id)) setActiveTab(tab.id)
             }}
           />
         ))}
@@ -36,7 +40,15 @@ export function ThesaurusTabs() {
 
       {/* Tab content */}
       <div className="flex-1 overflow-hidden pt-3">
-        {activeTab === "word-lookup" && <WordLookupTab />}
+        {activeTab === "word-lookup" && <WordLookupTab initialTerm={activeWord} />}
+        {activeTab === "rhyme" && (
+          <RhymeFinderTab
+            onSelectWord={(w) => {
+              setActiveWord(w)
+              setActiveTab("word-lookup")
+            }}
+          />
+        )}
       </div>
     </div>
   )
