@@ -46,7 +46,10 @@ Sayong nisabak sa bakbakan kalisod dakong kontra"
 
 // Ordered list of models to try
 const AI_PROVIDERS = [
-  { model: google('gemini-2.5-flash'), name: 'Google Gemini Flash' },
+  { model: google('gemini-3-flash-preview'), name: 'Google Gemini 3 Flash' },
+  { model: google('gemini-2.5-flash'), name: 'Google Gemini 2.5 Flash' },
+  { model: google('gemini-flash-lite-latest'), name: 'Google Gemini 2.5 Flash Lite' },
+  { model: google('gemini-3.1-flash-lite-preview'), name: 'Google Gemini 3.1 Flash Lite' },
   { model: groq('openai/gpt-oss-120b'), name: 'Groq GPT-OSS 120B' },
 ];
 
