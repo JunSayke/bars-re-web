@@ -18,6 +18,11 @@ import {
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://localhost:54321"
 
 export const authHandlers = [
+  // Get User — supabase.auth.getUser
+  http.get(`${SUPABASE_URL}/auth/v1/user`, () => {
+    return HttpResponse.json(mockSupabaseSession.user)
+  }),
+
   // Login — supabase.auth.signInWithPassword
   http.post(`${SUPABASE_URL}/auth/v1/token`, async ({ request }) => {
     const body = await request.json() as { email: string; password: string }
