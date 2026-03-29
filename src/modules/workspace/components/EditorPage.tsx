@@ -24,6 +24,8 @@ import { SnippetFormDialog } from "./molecules/SnippetFormDialog"
 import { EditorShell } from "./templates/EditorShell"
 import { SnippetsPanel } from "./templates/SnippetsPanel"
 import { ThesaurusPanel } from "./templates/ThesaurusPanel"
+import { AiAssistantPanel } from "./templates/AiAssistantPanel"
+import { AiFeedbackView } from "./organisms/AiFeedbackView"
 
 function groupBars(bars: Bar[]): SectionData[] {
   const map = new Map<string, Bar[]>()
@@ -441,6 +443,12 @@ export function EditorPage() {
       </EditorShell>
 
       <WorkspaceWindowMenu openPanels={openPanels} onToggle={handleTogglePanel} />
+
+      {openPanels.has("ai-assistant") && (
+        <AiAssistantPanel onClose={() => handleTogglePanel("ai-assistant")}>
+          <AiFeedbackView />
+        </AiAssistantPanel>
+      )}
 
       {openPanels.has("thesaurus") && (
         <ThesaurusPanel onClose={() => handleTogglePanel("thesaurus")} />
