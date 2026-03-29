@@ -56,7 +56,8 @@ export function WordLookupTab({ initialTerm }: WordLookupTabProps) {
     result !== null &&
     result.definitions.length === 0 &&
     result.homonyms.length === 0 &&
-    result.translations.length === 0
+    result.translations.length === 0 &&
+    result.suggestedWords.length === 0
 
   return (
     <div className="flex flex-col gap-4 h-full">

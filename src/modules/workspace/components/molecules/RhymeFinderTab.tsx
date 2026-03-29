@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRhymeQuery } from "../../hooks/useRhymeQuery"
 import type { RhymeCandidate } from "../../types/thesaurus.types"
 
@@ -71,8 +71,13 @@ function ChipGroup({
 export function RhymeFinderTab({ onSelectWord }: RhymeFinderTabProps) {
   const [inputValue, setInputValue] = useState("")
   const [submittedTerm, setSubmittedTerm] = useState("")
+  const [page, setPage] = useState(1)
 
-  const { result, isLoading, isError, refetch } = useRhymeQuery(submittedTerm)
+  useEffect(() => {
+    setPage(1)
+  }, [submittedTerm])
+
+  const { result, isLoading, isError, refetch } = useRhymeQuery(submittedTerm, page)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -142,6 +147,28 @@ export function RhymeFinderTab({ onSelectWord }: RhymeFinderTabProps) {
           </div>
         )}
       </div>
+
+      {submittedTerm && !isError && (
+        <div className="flex items-center justify-between gap-2 pt-1 border-t border-border">
+          <button
+            type="button"
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page === 1}
+            className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          >
+            ← Previous
+          </button>
+          <span className="text-xs text-muted-foreground">Page {page}</span>
+          <button
+            type="button"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={!result?.hasNextPage}
+            className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          >
+            Next →
+          </button>
+        </div>
+      )}
     </div>
   )
 }
