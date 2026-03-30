@@ -115,19 +115,19 @@ CREATE TABLE IF NOT EXISTS "public"."sessions" (
 ALTER TABLE "public"."sessions" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."snippets" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "user_id" "uuid" NOT NULL,
-    "title" "text" NOT NULL,
-    "content" "text" NOT NULL,
-    "tags" "text"[] DEFAULT '{}'::"text"[] NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    CONSTRAINT "snippets_content_length" CHECK (("char_length"("content") <= 10000))
-);
+-- CREATE TABLE IF NOT EXISTS "public"."snippets" (
+--     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+--     "user_id" "uuid" NOT NULL,
+--     "title" "text" NOT NULL,
+--     "content" "text" NOT NULL,
+--     "tags" "text"[] DEFAULT '{}'::"text"[] NOT NULL,
+--     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+--     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+--     CONSTRAINT "snippets_content_length" CHECK (("char_length"("content") <= 10000))
+-- );
 
 
-ALTER TABLE "public"."snippets" OWNER TO "postgres";
+-- ALTER TABLE "public"."snippets" OWNER TO "postgres";
 
 
 ALTER TABLE ONLY "public"."beat_files"
@@ -140,8 +140,8 @@ ALTER TABLE ONLY "public"."sessions"
 
 
 
-ALTER TABLE ONLY "public"."snippets"
-    ADD CONSTRAINT "snippets_pkey" PRIMARY KEY ("id");
+-- ALTER TABLE ONLY "public"."snippets"
+--     ADD CONSTRAINT "snippets_pkey" PRIMARY KEY ("id");
 
 
 
@@ -155,8 +155,8 @@ ALTER TABLE ONLY "public"."sessions"
 
 
 
-ALTER TABLE ONLY "public"."snippets"
-    ADD CONSTRAINT "snippets_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+-- ALTER TABLE ONLY "public"."snippets"
+--     ADD CONSTRAINT "snippets_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
 
 
 
@@ -168,7 +168,7 @@ CREATE POLICY "Users manage their beat files" ON "public"."beat_files" TO "authe
 
 
 
-CREATE POLICY "Users manage their own snippets" ON "public"."snippets" TO "authenticated" USING (("auth"."uid"() = "user_id")) WITH CHECK (("auth"."uid"() = "user_id"));
+-- CREATE POLICY "Users manage their own snippets" ON "public"."snippets" TO "authenticated" USING (("auth"."uid"() = "user_id")) WITH CHECK (("auth"."uid"() = "user_id"));
 
 
 
@@ -194,7 +194,7 @@ CREATE POLICY "sessions: owner access only" ON "public"."sessions" USING (("auth
 
 
 
-ALTER TABLE "public"."snippets" ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE "public"."snippets" ENABLE ROW LEVEL SECURITY;
 
 
 
@@ -392,9 +392,9 @@ GRANT ALL ON TABLE "public"."sessions" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."snippets" TO "anon";
-GRANT ALL ON TABLE "public"."snippets" TO "authenticated";
-GRANT ALL ON TABLE "public"."snippets" TO "service_role";
+-- GRANT ALL ON TABLE "public"."snippets" TO "anon";
+-- GRANT ALL ON TABLE "public"."snippets" TO "authenticated";
+-- GRANT ALL ON TABLE "public"."snippets" TO "service_role";
 
 
 

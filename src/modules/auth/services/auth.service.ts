@@ -1,9 +1,11 @@
 // @module: auth
 // @layer: service
 // @scope: module
-// @deps: @/shared/config/supabase, auth.types.ts, auth.schema.ts
+// @deps: @/shared/config/supabase.browser, auth.types.ts, auth.schema.ts
 
-import { supabase } from "@/shared/config/supabase"
+import { createSupabaseBrowserClient } from "@/shared/config/supabase.browser"
+
+const supabase = createSupabaseBrowserClient()
 import type { AuthUser, AuthError, ForgotPasswordResponse, ResetPasswordResponse } from "../types/auth.types"
 import type { LoginDto, SignupDto, ForgotPasswordDto, ResetPasswordDto } from "../schemas/auth.schema"
 
@@ -54,7 +56,11 @@ export async function signupUser(dto: SignupDto): Promise<AuthUser> {
 }
 
 export async function forgotPassword(dto: ForgotPasswordDto): Promise<ForgotPasswordResponse> {
-  const { error } = await supabase.auth.resetPasswordForEmail(dto.email)
+  const { error } = await supabase.auth.resetPasswordForEmail(dto.email, {
+    // ?type=recovery is appended so the callback page can detect the recovery flow via URL
+    // even in PKCE mode (where gotrue may emit SIGNED_IN before PASSWORD_RECOVERY).
+    redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+  })
 
   if (error) throw toAuthError(error)
 
@@ -70,5 +76,18 @@ export async function resetPassword(
 
   if (error) throw toAuthError(error)
 
+  await supabase.auth.signOut()
+
   return { message: "Password updated successfully" }
+}
+
+export async function signInWithGoogle(): Promise<void> {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  })
+
+  if (error) throw toAuthError(error)
 }

@@ -1,0 +1,1 @@
+- [BARS original codebase](reference_bars_original.md) — Original monorepo at /Users/geloes/BARS; reference for features & flows being rebuilt

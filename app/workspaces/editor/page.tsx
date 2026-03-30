@@ -1,10 +1,11 @@
+import { Suspense } from "react"
+import { EditorPage } from "@/modules/workspace/components/EditorPage"
 
-export const metadata = {
-  title: "Workspace - Bisaya AI Rap System",
-};
-
-export default function EditorWorkspacePage() {
+export default function Page() {
   return (
-    <div>Workspace Editor Page</div>
-  );
+    <Suspense>
+      <EditorPage />
+    </Suspense>
+  )
 }
+

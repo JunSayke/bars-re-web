@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Be_Vietnam_Pro } from "next/font/google";
 import { QueryProvider } from "@/shared/providers/QueryProvider";
+import { UiScaleProvider } from "@/shared/providers/UiScaleProvider";
 import { MockProvider } from "@/shared/mocks/MockProvider";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -41,8 +43,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${beVietnam.variable} antialiased dark`}
       >
         <QueryProvider>
-          <MockProvider>{children}</MockProvider>
+          <MockProvider>
+            <UiScaleProvider>
+              {children}
+            </UiScaleProvider>
+          </MockProvider>
         </QueryProvider>
+        <Toaster />
       </body>
     </html>
   );
