@@ -43,6 +43,38 @@ export type Database = {
         }
         Relationships: []
       }
+      beat_links: {
+        Row: {
+          id: string
+          session_id: string
+          url: string
+          provider: string
+          bpm: number | null
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          url: string
+          provider?: string
+          bpm?: number | null
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          url?: string
+          provider?: string
+          bpm?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beat_links_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       beat_files: {
         Row: {
           id: string

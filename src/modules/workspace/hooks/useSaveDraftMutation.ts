@@ -10,7 +10,7 @@ export function useSaveDraftMutation(sessionId: string) {
     Error,
     SaveDraftPayload
   >({
-    mutationFn: (payload) => saveDraft(sessionId, payload.bars),
+    mutationFn: (payload) => saveDraft(sessionId, payload),
   })
 
   return { mutate, isPending, isError, isSuccess }

@@ -130,6 +130,34 @@ export async function renameSession(
   }
 }
 
+export async function updateSessionTopic(
+  id: string,
+  topic: string
+): Promise<SessionSummary> {
+  const userId = await getAuthUser()
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .update({ topic, last_modified_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", userId)
+    .select("id, title, topic, bar_content, last_modified_at, beat_files(id)")
+    .single()
+
+  if (error) throw error
+
+  return {
+    id: data.id,
+    title: data.title,
+    topic: data.topic ?? "",
+    previewSnippet: toPreviewSnippet(data.bar_content),
+    thumbnailType: toThumbnailType(
+      Array.isArray(data.beat_files) && data.beat_files.length > 0
+    ),
+    lastModifiedAt: data.last_modified_at,
+  }
+}
+
 export async function deleteSession(id: string): Promise<void> {
   const userId = await getAuthUser()
 

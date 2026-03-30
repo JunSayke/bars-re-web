@@ -12,7 +12,7 @@ export function WordCountIndicator({ wordCount, maxWords = 1000 }: WordCountIndi
   return (
     <span
       className={cn(
-        "text-xs font-mono font-medium select-none",
+        "text-[0.75em] font-mono font-medium select-none",
         isAtLimit
           ? "text-destructive"
           : isWarning

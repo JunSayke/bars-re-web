@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { ROUTES } from "@/shared/constants/routes";
+import { HomeAuthLink } from "../atoms/HomeAuthLink";
 
 export function HomeCTA() {
   return (
@@ -23,12 +22,9 @@ export function HomeCTA() {
           precision.
         </p>
         <div className="inline-block glass-card p-2 rounded-2xl border border-border/20">
-          <Link
-            href={ROUTES.AUTH.LOGIN}
-            className="performance-gradient text-white px-12 py-6 rounded-xl text-xl font-bold uppercase tracking-wider hover:shadow-[0_0_40px_rgba(139,92,246,0.4)] transition-all inline-block"
-          >
+          <HomeAuthLink className="performance-gradient text-white px-12 py-6 rounded-xl text-xl font-bold uppercase tracking-wider hover:shadow-[0_0_40px_rgba(139,92,246,0.4)] transition-all inline-block">
             Join the Collective
-          </Link>
+          </HomeAuthLink>
         </div>
       </div>
     </section>

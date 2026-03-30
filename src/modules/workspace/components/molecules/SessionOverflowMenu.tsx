@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { MoreHorizontal, Pencil, Tag, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -9,10 +9,11 @@ import {
 
 interface SessionOverflowMenuProps {
   onRename: () => void
+  onEditTopic: () => void
   onDelete: () => void
 }
 
-export function SessionOverflowMenu({ onRename, onDelete }: SessionOverflowMenuProps) {
+export function SessionOverflowMenu({ onRename, onEditTopic, onDelete }: SessionOverflowMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -25,6 +26,10 @@ export function SessionOverflowMenu({ onRename, onDelete }: SessionOverflowMenuP
         <DropdownMenuItem onSelect={onRename}>
           <Pencil className="size-4" />
           Rename
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={onEditTopic}>
+          <Tag className="size-4" />
+          Edit Topic
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive">
           <Trash2 className="size-4" />

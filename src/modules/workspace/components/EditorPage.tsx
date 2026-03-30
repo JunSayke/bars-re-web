@@ -18,6 +18,7 @@ import type { SectionData } from "./organisms/BarsEditor"
 import { BarsEditor } from "./organisms/BarsEditor"
 import { BeatPlayerBar } from "./organisms/BeatPlayerBar"
 import { EditorTopNav } from "./organisms/EditorTopNav"
+import { EditorZoomBar } from "./atoms/EditorZoomBar"
 import { WorkspaceWindowMenu } from "./organisms/WorkspaceWindowMenu"
 import { SnippetList } from "./organisms/SnippetList"
 import { SnippetFormDialog } from "./molecules/SnippetFormDialog"
@@ -26,6 +27,7 @@ import { SnippetsPanel } from "./templates/SnippetsPanel"
 import { ThesaurusPanel } from "./templates/ThesaurusPanel"
 import { AiAssistantPanel } from "./templates/AiAssistantPanel"
 import { AiFeedbackView } from "./organisms/AiFeedbackView"
+import { BeatLinkPanel } from "./templates/BeatLinkPanel"
 
 function groupBars(bars: Bar[]): SectionData[] {
   const map = new Map<string, Bar[]>()
@@ -80,6 +82,66 @@ export function EditorPage() {
   const updateSnippet = useUpdateSnippetMutation()
   const deleteSnippet = useDeleteSnippetMutation()
 
+  // ── Zoom state ───────────────────────────────────────────────────────────
+  const [zoomLevel, setZoomLevel] = useState<number>(100)
+
+  useEffect(() => {
+    const stored = localStorage.getItem("bars:editorZoom")
+    if (stored !== null) {
+      const parsed = parseInt(stored, 10)
+      if (!isNaN(parsed)) {
+        setZoomLevel(Math.min(200, Math.max(50, parsed)))
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("bars:editorZoom", String(zoomLevel))
+  }, [zoomLevel])
+
+  const zoomScale = zoomLevel / 100
+
+  const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 10, 200))
+  const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 10, 50))
+
+  // ── Column width resize ───────────────────────────────────────────────────
+  const [columnWidth, setColumnWidth] = useState<number | null>(null)
+  const columnResizeRef = useRef<{ startX: number; startWidth: number; dir: "left" | "right" } | null>(null)
+  const columnRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const stored = localStorage.getItem("bars:editorColumnWidth")
+    if (stored !== null) {
+      const parsed = parseInt(stored, 10)
+      if (!isNaN(parsed)) setColumnWidth(Math.max(320, parsed))
+    }
+  }, [])
+
+  useEffect(() => {
+    if (columnWidth !== null) {
+      localStorage.setItem("bars:editorColumnWidth", String(columnWidth))
+    }
+  }, [columnWidth])
+
+  const handleResizePointerDown = (dir: "left" | "right") =>
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      e.currentTarget.setPointerCapture(e.pointerId)
+      const currentWidth = columnRef.current?.offsetWidth ?? 640
+      columnResizeRef.current = { startX: e.clientX, startWidth: columnWidth ?? currentWidth, dir }
+    }
+
+  const handleResizePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!columnResizeRef.current) return
+    const delta = e.clientX - columnResizeRef.current.startX
+    const widthDelta = columnResizeRef.current.dir === "right" ? delta : -delta
+    const next = Math.max(320, Math.min(columnResizeRef.current.startWidth + widthDelta, window.innerWidth - 64))
+    setColumnWidth(next)
+  }
+
+  const handleResizePointerUp = () => {
+    columnResizeRef.current = null
+  }
+
   // ── Panel open/close state ────────────────────────────────────────────────
   const [openPanels, setOpenPanels] = useState<Set<string>>(new Set())
   const handleTogglePanel = (key: string) => {
@@ -89,6 +151,18 @@ export function EditorPage() {
       else next.add(key)
       return next
     })
+  }
+
+  // ── Panel z-index (bring-to-front) ────────────────────────────────────────
+  const panelZCounter = useRef(54)
+  const [panelZIndexes, setPanelZIndexes] = useState<Record<string, number>>({
+    snippets: 50,
+    thesaurus: 51,
+    "beat-link": 52,
+    "ai-assistant": 53,
+  })
+  const handlePanelActivate = (key: string) => {
+    setPanelZIndexes((prev) => ({ ...prev, [key]: panelZCounter.current++ }))
   }
 
   // ── Snippet form dialog state ─────────────────────────────────────────────
@@ -187,6 +261,14 @@ export function EditorPage() {
     }
   }, [session])
 
+  // Initialise editor sizes from the session record once per session load.
+  // This takes priority over localStorage so each session remembers its own sizes.
+  useEffect(() => {
+    if (!session) return
+    if (session.editorZoom != null) setZoomLevel(session.editorZoom)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.id])
+
   // Sync save status from mutation state
   useEffect(() => {
     if (isPending) setSaveStatus("saving")
@@ -199,32 +281,41 @@ export function EditorPage() {
 
   // Keep refs current so the 30s interval always reads latest values
   const isUploadingRef = useRef(false)
+  const zoomLevelRef = useRef<number>(100)
   useEffect(() => { barsRef.current = bars }, [bars])
   useEffect(() => { isAtWordLimitRef.current = isAtWordLimit }, [isAtWordLimit])
   useEffect(() => { isUploadingRef.current = beatPlayer.isUploading }, [beatPlayer.isUploading])
+  useEffect(() => { zoomLevelRef.current = zoomLevel }, [zoomLevel])
 
   // 1s debounce auto-save — paused while a beat upload is in flight
   useEffect(() => {
     if (!session || bars.length === 0 || isAtWordLimit || beatPlayer.isUploading) return
     const timer = setTimeout(() => {
-      saveMutate({ bars })
+      saveMutate({ bars, editorZoom: zoomLevel })
     }, 1_000)
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bars, beatPlayer.isUploading])
+  }, [bars, zoomLevel, beatPlayer.isUploading])
 
   // 30s ceiling auto-save — uses refs to avoid stale closure
   useEffect(() => {
     if (!session) return
     const interval = setInterval(() => {
       if (isAtWordLimitRef.current || !barsRef.current.length || isUploadingRef.current) return
-      saveMutate({ bars: barsRef.current })
+      saveMutate({ bars: barsRef.current, editorZoom: zoomLevelRef.current })
     }, 30_000)
     return () => clearInterval(interval)
   }, [session, saveMutate])
 
   const handleBarChange = (barId: string, text: string) => {
     setBars((prev) => prev.map((b) => (b.id === barId ? { ...b, text } : b)))
+  }
+
+  const handleBarNavigate = (barId: string, direction: "up" | "down") => {
+    const allBarIds = groupBars(bars).flatMap((s) => s.bars.map((b) => b.id))
+    const idx = allBarIds.indexOf(barId)
+    if (direction === "up" && idx > 0) setFocusBarId(allBarIds[idx - 1])
+    else if (direction === "down" && idx < allBarIds.length - 1) setFocusBarId(allBarIds[idx + 1])
   }
 
   const handlePasteLines = (atBarId: string, lines: string[]) => {
@@ -399,63 +490,116 @@ export function EditorPage() {
   return (
     <>
       <EditorShell
-        topNav={
-          <EditorTopNav sessionTitle={session?.title ?? ""} />
+        topNav={<EditorTopNav sessionTitle={session?.title ?? ""} />}
+        bottomBar={
+          <>
+            <EditorZoomBar
+              zoomLevel={zoomLevel}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+            />
+            <BeatPlayerBar {...beatPlayer} />
+          </>
         }
-        bottomBar={<BeatPlayerBar {...beatPlayer} />}
+        contentMaxWidth={columnWidth ?? undefined}
       >
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center justify-between">
-            {isAtWordLimit && (
-              <span className="text-xs text-destructive font-medium">
-                Word limit reached — save blocked
-              </span>
-            )}
-            <div className="ml-auto flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  const allText = bars.map((b) => b.text).join("\n")
-                  navigator.clipboard.writeText(allText).then(() => toast.success("Copied to clipboard"))
-                }}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Copy all bars to clipboard"
-              >
-                Copy All
-              </button>
-              <AutoSaveStatusIndicator status={saveStatus} />
-            </div>
+        <div ref={columnRef} className="relative">
+          {/* Left column resize handle */}
+          <div
+            className="absolute inset-y-0 -left-2 w-4 cursor-col-resize flex items-center justify-center group z-10 select-none"
+            onPointerDown={handleResizePointerDown("left")}
+            onPointerMove={handleResizePointerMove}
+            onPointerUp={handleResizePointerUp}
+            title="Drag to resize column width"
+          >
+            <div className="h-12 w-px rounded-full bg-border/60 group-hover:bg-primary/40 transition-colors" />
           </div>
-          <BarsEditor
-            sections={sections}
-            wordCount={wordCount}
-            onBarChange={handleBarChange}
-            onAddBar={handleAddBar}
-            onRemoveBar={handleRemoveBar}
-            onPasteLines={handlePasteLines}
-            onSectionTypeChange={handleSectionTypeChange}
-            onAddSection={handleAddSection}
-            onRemoveSection={handleRemoveSection}
-            onMoveSection={handleMoveSection}
-            focusBarId={focusBarId}
-          />
+          {/* Right column resize handle */}
+          <div
+            className="absolute inset-y-0 -right-2 w-4 cursor-col-resize flex items-center justify-center group z-10 select-none"
+            onPointerDown={handleResizePointerDown("right")}
+            onPointerMove={handleResizePointerMove}
+            onPointerUp={handleResizePointerUp}
+            title="Drag to resize column width"
+          >
+            <div className="h-12 w-px rounded-full bg-border/60 group-hover:bg-primary/40 transition-colors" />
+          </div>
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-between">
+              {isAtWordLimit && (
+                <span className="text-xs text-destructive font-medium">
+                  Word limit reached — save blocked
+                </span>
+              )}
+              <div className="ml-auto flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const allText = bars.map((b) => b.text).join("\n")
+                    navigator.clipboard.writeText(allText).then(() => toast.success("Copied to clipboard"))
+                  }}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Copy all bars to clipboard"
+                >
+                  Copy All
+                </button>
+                <AutoSaveStatusIndicator status={saveStatus} />
+              </div>
+            </div>
+            <BarsEditor
+              sections={sections}
+              wordCount={wordCount}
+              onBarChange={handleBarChange}
+              onAddBar={handleAddBar}
+              onRemoveBar={handleRemoveBar}
+              onPasteLines={handlePasteLines}
+              onSectionTypeChange={handleSectionTypeChange}
+              onAddSection={handleAddSection}
+              onRemoveSection={handleRemoveSection}
+              onMoveSection={handleMoveSection}
+              focusBarId={focusBarId}
+              zoomScale={zoomScale}
+              onNavigateBar={handleBarNavigate}
+            />
+          </div>
         </div>
       </EditorShell>
 
       <WorkspaceWindowMenu openPanels={openPanels} onToggle={handleTogglePanel} />
 
       {openPanels.has("ai-assistant") && (
-        <AiAssistantPanel onClose={() => handleTogglePanel("ai-assistant")}>
+        <AiAssistantPanel
+          onClose={() => handleTogglePanel("ai-assistant")}
+          onActivate={() => handlePanelActivate("ai-assistant")}
+          zIndex={panelZIndexes["ai-assistant"]}
+        >
           <AiFeedbackView />
         </AiAssistantPanel>
       )}
 
       {openPanels.has("thesaurus") && (
-        <ThesaurusPanel onClose={() => handleTogglePanel("thesaurus")} />
+        <ThesaurusPanel
+          onClose={() => handleTogglePanel("thesaurus")}
+          onActivate={() => handlePanelActivate("thesaurus")}
+          zIndex={panelZIndexes["thesaurus"]}
+        />
+      )}
+
+      {openPanels.has("beat-link") && (
+        <BeatLinkPanel
+          sessionId={sessionId}
+          onClose={() => handleTogglePanel("beat-link")}
+          onActivate={() => handlePanelActivate("beat-link")}
+          zIndex={panelZIndexes["beat-link"]}
+        />
       )}
 
       {openPanels.has("snippets") && (
-        <SnippetsPanel onClose={() => handleTogglePanel("snippets")}>
+        <SnippetsPanel
+          onClose={() => handleTogglePanel("snippets")}
+          onActivate={() => handlePanelActivate("snippets")}
+          zIndex={panelZIndexes["snippets"]}
+        >
           <SnippetList
             snippets={snippets}
             isLoading={snippetsLoading}

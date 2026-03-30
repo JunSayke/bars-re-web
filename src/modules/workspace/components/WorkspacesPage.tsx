@@ -16,7 +16,7 @@ export function WorkspacesPage() {
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
       <WorkspacesTopNav />
       <main className="flex-1 overflow-y-auto">
-      <div className="mx-auto max-w-2xl px-4 py-10">
+      <div className="mx-auto max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl px-4 sm:px-6 lg:px-10 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Sessions</h1>
         <Button onClick={() => setDialogOpen(true)}>New Session</Button>

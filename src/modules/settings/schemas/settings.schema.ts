@@ -22,5 +22,22 @@ export const updateProfilePayloadSchema = z.object({
   avatarUrl: z.string().url("Must be a valid URL").nullable().optional(),
 })
 
+export const updateEmailPayloadSchema = z.object({
+  newEmail: z.string().email("Must be a valid email address"),
+})
+
+export const updatePasswordPayloadSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+
 export type Profile = z.infer<typeof profileSchema>
 export type UpdateProfilePayload = z.infer<typeof updateProfilePayloadSchema>
+export type UpdateEmailPayload = z.infer<typeof updateEmailPayloadSchema>
+export type UpdatePasswordPayload = z.infer<typeof updatePasswordPayloadSchema>

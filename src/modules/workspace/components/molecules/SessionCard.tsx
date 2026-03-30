@@ -1,3 +1,7 @@
+"use client"
+
+import { useState } from "react"
+import type { MouseEvent } from "react"
 import { Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SessionThumbnail } from "../atoms/SessionThumbnail"
@@ -20,12 +24,20 @@ interface SessionCardProps {
   session: SessionSummary
   onOpen: () => void
   onRename: () => void
+  onEditTopic: () => void
   onDelete: () => void
 }
 
-export function SessionCard({ session, onOpen, onRename, onDelete }: SessionCardProps) {
+export function SessionCard({ session, onOpen, onRename, onEditTopic, onDelete }: SessionCardProps) {
+  const [isTopicExpanded, setIsTopicExpanded] = useState(false)
+
+  function handleTopicToggle(e: MouseEvent) {
+    e.stopPropagation()
+    setIsTopicExpanded((prev) => !prev)
+  }
+
   return (
-    <div className="group flex items-center gap-3 rounded-lg border bg-card px-4 py-3 transition-colors hover:bg-accent/40">
+    <div className="group flex items-center gap-3 overflow-hidden rounded-lg border bg-card px-4 py-3 transition-colors hover:bg-accent/40">
       {/* Clickable area */}
       <button
         className="flex min-w-0 flex-1 items-center gap-3 text-left"
@@ -36,8 +48,12 @@ export function SessionCard({ session, onOpen, onRename, onDelete }: SessionCard
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-foreground">{session.title}</p>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">{session.previewSnippet}</p>
-          <div className="mt-1.5 flex items-center gap-2">
-            <TopicBadge topic={session.topic} />
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <TopicBadge
+              topic={session.topic}
+              expanded={isTopicExpanded}
+              onToggle={handleTopicToggle}
+            />
             <span className="text-xs text-muted-foreground">{relativeTime(session.lastModifiedAt)}</span>
           </div>
         </div>
@@ -50,7 +66,7 @@ export function SessionCard({ session, onOpen, onRename, onDelete }: SessionCard
           <Play className="size-4" />
           <span className="sr-only">Play beat</span>
         </Button>
-        <SessionOverflowMenu onRename={onRename} onDelete={onDelete} />
+        <SessionOverflowMenu onRename={onRename} onEditTopic={onEditTopic} onDelete={onDelete} />
       </div>
     </div>
   )

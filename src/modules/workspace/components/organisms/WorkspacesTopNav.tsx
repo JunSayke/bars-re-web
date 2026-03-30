@@ -1,16 +1,17 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import Link from "next/link"
 import { supabase } from "@/shared/config/supabase"
+import { UiScaleWidget } from "@/components/atoms/UiScaleWidget"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { useProfileQuery } from "@/modules/settings"
 
-interface WorkspacesTopNavProps {
-  onSettingsClick?: () => void
-}
-
-export function WorkspacesTopNav({ onSettingsClick }: WorkspacesTopNavProps) {
+export function WorkspacesTopNav() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const { profile } = useProfileQuery()
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -38,28 +39,34 @@ export function WorkspacesTopNav({ onSettingsClick }: WorkspacesTopNavProps) {
 
   return (
     <header className="flex items-center justify-end gap-2 px-6 py-3 border-b border-border/40 bg-card shrink-0">
-      <button
-        type="button"
-        onClick={onSettingsClick}
+      <UiScaleWidget />
+      <div className="w-px h-4 bg-border/60" />
+      <Link
+        href="/settings/profile"
         className="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
         aria-label="Settings"
       >
         <span className="material-symbols-outlined text-base" aria-hidden>
           settings
         </span>
-      </button>
+      </Link>
 
       {/* User avatar + dropdown */}
       <div className="relative" ref={dropdownRef}>
         <button
           type="button"
           onClick={() => setDropdownOpen((prev) => !prev)}
-          className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground select-none hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          className="rounded-full hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           aria-label="User menu"
           aria-haspopup="true"
           aria-expanded={dropdownOpen}
         >
-          U
+          <Avatar className="w-7 h-7">
+            <AvatarImage src={profile?.avatarUrl ?? undefined} alt={profile?.displayName ?? "User"} />
+            <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+              {profile?.displayName?.[0]?.toUpperCase() ?? "U"}
+            </AvatarFallback>
+          </Avatar>
         </button>
 
         {dropdownOpen && (

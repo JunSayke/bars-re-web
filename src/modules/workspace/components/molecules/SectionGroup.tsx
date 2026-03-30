@@ -25,6 +25,8 @@ interface SectionGroupProps {
   isLastSection: boolean
   /** ID of the bar that should receive keyboard focus (caret switching). */
   focusBarId?: string | null
+  /** Move caret across bar/section boundaries with arrow keys. */
+  onNavigateBar?: (barId: string, direction: "up" | "down") => void
 }
 
 export function SectionGroup({
@@ -45,6 +47,7 @@ export function SectionGroup({
   isFirstSection,
   isLastSection,
   focusBarId,
+  onNavigateBar,
 }: SectionGroupProps) {
   const syllableCount = bars.reduce(
     (sum, bar) => sum + (bar.text.trim() ? countSyllables(bar.text) : 0),
@@ -61,7 +64,7 @@ export function SectionGroup({
           <select
             value={currentType}
             onChange={(e) => onSectionTypeChange(sectionKey, e.target.value as SectionType)}
-            className="text-xs font-bold uppercase tracking-widest text-muted-foreground bg-transparent border-none outline-none cursor-pointer hover:text-foreground transition-colors appearance-none"
+            className="text-[0.75em] font-bold uppercase tracking-widest text-muted-foreground bg-transparent border-none outline-none cursor-pointer hover:text-foreground transition-colors appearance-none [&>option]:text-black [&>option]:bg-white"
             aria-label="Section type"
           >
             {SECTION_TYPES.map((type) => (
@@ -71,7 +74,7 @@ export function SectionGroup({
             ))}
           </select>
           {sectionLabel.match(/\d+$/) && (
-            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground pointer-events-none">
+            <span className="text-[0.75em] font-bold uppercase tracking-widest text-muted-foreground pointer-events-none">
               {sectionLabel.match(/\d+$/)?.[0]}
             </span>
           )}
@@ -81,7 +84,7 @@ export function SectionGroup({
             type="button"
             onClick={() => onMoveSection(sectionKey, "up")}
             disabled={isFirstSection}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed px-1"
+            className="text-[0.75em] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed px-1"
             aria-label="Move section up"
           >
             ↑
@@ -90,7 +93,7 @@ export function SectionGroup({
             type="button"
             onClick={() => onMoveSection(sectionKey, "down")}
             disabled={isLastSection}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed px-1"
+            className="text-[0.75em] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed px-1"
             aria-label="Move section down"
           >
             ↓
@@ -101,7 +104,7 @@ export function SectionGroup({
               const text = bars.map((b) => b.text).join("\n")
               navigator.clipboard.writeText(text)
             }}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors px-1"
+            className="text-[0.75em] text-muted-foreground hover:text-foreground transition-colors px-1"
             aria-label="Copy section bars to clipboard"
           >
             Copy
@@ -110,7 +113,7 @@ export function SectionGroup({
             type="button"
             onClick={() => onRemoveSection(sectionKey)}
             disabled={isRemoveSectionDisabled}
-            className="text-xs text-muted-foreground hover:text-destructive transition-colors disabled:opacity-30 disabled:cursor-not-allowed px-1"
+            className="text-[0.75em] text-muted-foreground hover:text-destructive transition-colors disabled:opacity-30 disabled:cursor-not-allowed px-1"
             aria-label="Remove section"
           >
             Remove
@@ -129,6 +132,8 @@ export function SectionGroup({
             onPasteLines={(lines) => onPasteLines(bar.id, lines)}
             isRemoveDisabled={totalBarCount <= 1}
             isFocused={bar.id === focusBarId}
+            onNavigatePrev={() => onNavigateBar?.(bar.id, "up")}
+            onNavigateNext={() => onNavigateBar?.(bar.id, "down")}
           />
         ))}
       </div>
@@ -137,7 +142,7 @@ export function SectionGroup({
         <button
           type="button"
           onClick={() => onAddSection(sectionKey)}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="text-[0.75em] text-muted-foreground hover:text-foreground transition-colors"
           aria-label="Add section after"
         >
           + Add Section

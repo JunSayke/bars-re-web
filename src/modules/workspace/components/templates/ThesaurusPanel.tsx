@@ -16,11 +16,15 @@ function getInitialPos(w: number, h: number) {
   }
 }
 
+type ResizeDir = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw"
+
 interface ThesaurusPanelProps {
   onClose: () => void
+  onActivate: () => void
+  zIndex: number
 }
 
-export function ThesaurusPanel({ onClose }: ThesaurusPanelProps) {
+export function ThesaurusPanel({ onClose, onActivate, zIndex }: ThesaurusPanelProps) {
   const [pos, setPos] = useState(() => getInitialPos(INITIAL_WIDTH, INITIAL_HEIGHT))
   const [panelSize, setPanelSize] = useState({ w: INITIAL_WIDTH, h: INITIAL_HEIGHT })
 
@@ -36,6 +40,9 @@ export function ThesaurusPanel({ onClose }: ThesaurusPanelProps) {
     startY: number
     originW: number
     originH: number
+    originX: number
+    originY: number
+    dir: ResizeDir
   } | null>(null)
 
   function onPanelPointerDown(e: React.PointerEvent<HTMLDivElement>) {
@@ -65,7 +72,7 @@ export function ThesaurusPanel({ onClose }: ThesaurusPanelProps) {
     }))
   }
 
-  function onResizePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+  function onResizePointerDown(e: React.PointerEvent<HTMLDivElement>, dir: ResizeDir) {
     e.stopPropagation()
     e.currentTarget.setPointerCapture(e.pointerId)
     resizeState.current = {
@@ -73,15 +80,33 @@ export function ThesaurusPanel({ onClose }: ThesaurusPanelProps) {
       startY: e.clientY,
       originW: panelSize.w,
       originH: panelSize.h,
+      originX: pos.x,
+      originY: pos.y,
+      dir,
     }
   }
 
   function onResizePointerMove(e: React.PointerEvent<HTMLDivElement>) {
     if (!resizeState.current) return
-    setPanelSize({
-      w: Math.max(MIN_WIDTH, resizeState.current.originW + (e.clientX - resizeState.current.startX)),
-      h: Math.max(MIN_HEIGHT, resizeState.current.originH + (e.clientY - resizeState.current.startY)),
-    })
+    const { startX, startY, originW, originH, originX, originY, dir } = resizeState.current
+    const dx = e.clientX - startX
+    const dy = e.clientY - startY
+    let newW = originW
+    let newH = originH
+    let newX = originX
+    let newY = originY
+    if (dir.includes("e")) newW = Math.max(MIN_WIDTH, originW + dx)
+    if (dir.includes("w")) {
+      newW = Math.max(MIN_WIDTH, originW - dx)
+      newX = originX + (originW - newW)
+    }
+    if (dir.includes("s")) newH = Math.max(MIN_HEIGHT, originH + dy)
+    if (dir.includes("n")) {
+      newH = Math.max(MIN_HEIGHT, originH - dy)
+      newY = originY + (originH - newH)
+    }
+    setPanelSize({ w: newW, h: newH })
+    setPos({ x: newX, y: newY })
   }
 
   function onResizePointerUp() {
@@ -95,13 +120,14 @@ export function ThesaurusPanel({ onClose }: ThesaurusPanelProps) {
     width: panelSize.w,
     height: panelSize.h,
     transform: `translate(${pos.x}px, ${pos.y}px)`,
-    zIndex: 50,
+    zIndex,
   }
 
   return (
     <div
       style={panelStyle}
       className="flex flex-col rounded-lg border border-border bg-card shadow-xl overflow-hidden cursor-grab active:cursor-grabbing"
+      onPointerDownCapture={() => onActivate()}
       onPointerDown={onPanelPointerDown}
       onPointerMove={onPanelPointerMove}
       onPointerUp={onPanelPointerUp}
@@ -128,13 +154,22 @@ export function ThesaurusPanel({ onClose }: ThesaurusPanelProps) {
         <ThesaurusTabs />
       </div>
 
-      <div
-        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
-        onPointerDown={onResizePointerDown}
-        onPointerMove={onResizePointerMove}
-        onPointerUp={onResizePointerUp}
-        style={{ touchAction: "none" }}
-      />
+      {/* Top edge */}
+      <div className="absolute top-0 left-4 right-4 h-1 cursor-n-resize z-10" onPointerDown={(e) => onResizePointerDown(e, "n")} onPointerMove={onResizePointerMove} onPointerUp={onResizePointerUp} style={{ touchAction: "none" }} />
+      {/* Bottom edge */}
+      <div className="absolute bottom-0 left-4 right-4 h-1 cursor-s-resize z-10" onPointerDown={(e) => onResizePointerDown(e, "s")} onPointerMove={onResizePointerMove} onPointerUp={onResizePointerUp} style={{ touchAction: "none" }} />
+      {/* Left edge */}
+      <div className="absolute left-0 top-4 bottom-4 w-1 cursor-w-resize z-10" onPointerDown={(e) => onResizePointerDown(e, "w")} onPointerMove={onResizePointerMove} onPointerUp={onResizePointerUp} style={{ touchAction: "none" }} />
+      {/* Right edge */}
+      <div className="absolute right-0 top-4 bottom-4 w-1 cursor-e-resize z-10" onPointerDown={(e) => onResizePointerDown(e, "e")} onPointerMove={onResizePointerMove} onPointerUp={onResizePointerUp} style={{ touchAction: "none" }} />
+      {/* NW corner */}
+      <div className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize z-10" onPointerDown={(e) => onResizePointerDown(e, "nw")} onPointerMove={onResizePointerMove} onPointerUp={onResizePointerUp} style={{ touchAction: "none" }} />
+      {/* NE corner */}
+      <div className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize z-10" onPointerDown={(e) => onResizePointerDown(e, "ne")} onPointerMove={onResizePointerMove} onPointerUp={onResizePointerUp} style={{ touchAction: "none" }} />
+      {/* SW corner */}
+      <div className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize z-10" onPointerDown={(e) => onResizePointerDown(e, "sw")} onPointerMove={onResizePointerMove} onPointerUp={onResizePointerUp} style={{ touchAction: "none" }} />
+      {/* SE corner */}
+      <div className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize z-10" onPointerDown={(e) => onResizePointerDown(e, "se")} onPointerMove={onResizePointerMove} onPointerUp={onResizePointerUp} style={{ touchAction: "none" }} />
     </div>
   )
 }
