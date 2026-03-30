@@ -3,10 +3,9 @@ import { UiScaleWidget } from "@/components/atoms/UiScaleWidget"
 
 interface EditorTopNavProps {
   sessionTitle: string
-  onSettingsClick?: () => void
 }
 
-export function EditorTopNav({ sessionTitle, onSettingsClick }: EditorTopNavProps) {
+export function EditorTopNav({ sessionTitle }: EditorTopNavProps) {
   return (
     <header className="flex items-center gap-4 px-6 py-3 border-b border-border/40 bg-card">
       <Link
@@ -24,16 +23,15 @@ export function EditorTopNav({ sessionTitle, onSettingsClick }: EditorTopNavProp
       <div className="flex items-center gap-2 shrink-0">
         <UiScaleWidget />
         <div className="w-px h-4 bg-border/60" />
-        <button
-          type="button"
-          onClick={onSettingsClick}
+        <Link
+          href="/settings/profile"
           className="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           aria-label="Session settings"
         >
           <span className="material-symbols-outlined text-base" aria-hidden>
             settings
           </span>
-        </button>
+        </Link>
       </div>
     </header>
   )
