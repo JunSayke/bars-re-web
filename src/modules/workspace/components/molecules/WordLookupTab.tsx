@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Diamond } from "lucide-react"
+import { Diamond, Search, Loader2 } from "lucide-react"
 import { useWordLookupQuery } from "../../hooks/useWordLookupQuery"
 import { WordResultCard } from "../atoms/WordResultCard"
 
@@ -65,15 +65,25 @@ export function WordLookupTab({ initialTerm }: WordLookupTabProps) {
         <label htmlFor="thesaurus-query" className="text-xs font-medium text-muted-foreground">
           Query
         </label>
-        <input
-          id="thesaurus-query"
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Enter Bisaya term…"
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-          autoComplete="off"
-        />
+        <div className="flex gap-2">
+          <input
+            id="thesaurus-query"
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Enter Bisaya term…"
+            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            autoComplete="off"
+          />
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            aria-label="Search"
+          >
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+          </button>
+        </div>
       </form>
 
       <div className="flex-1 overflow-y-auto relative">
@@ -94,14 +104,15 @@ export function WordLookupTab({ initialTerm }: WordLookupTabProps) {
         {!isLoading && !isError && result && !hasNoResults && (
           <div className="relative">
             <WordResultCard result={result} onHomonymClick={handleHomonymClick} />
-            <button
+            {/* <button
               type="button"
-              onClick={() => {/* navigate stub */}}
+              onClick={() => }
               aria-label="Navigate to tool"
               className="absolute bottom-3 right-3 p-1.5 rounded text-purple-500 hover:bg-purple-500/10 transition-colors cursor-pointer"
             >
               <Diamond className="w-4 h-4 fill-purple-500" />
             </button>
+            */}
           </div>
         )}
       </div>

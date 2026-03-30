@@ -15,4 +15,6 @@ export const thesaurusKeys = {
   all: ["thesaurus"] as const,
   lookup: (term: string) => [...thesaurusKeys.all, "lookup", term] as const,
   rhyme: (term: string, page: number) => [...thesaurusKeys.all, "rhyme", term, page] as const,
+  synonyms: (term: string) => [...thesaurusKeys.all, "synonyms", term] as const,
+  anagrams: (term: string) => [...thesaurusKeys.all, "anagrams", term] as const,
 }

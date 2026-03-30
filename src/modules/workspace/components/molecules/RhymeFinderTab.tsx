@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { Search, Loader2 } from "lucide-react"
 import { useRhymeQuery } from "../../hooks/useRhymeQuery"
 import type { RhymeCandidate } from "../../types/thesaurus.types"
 
@@ -96,15 +97,25 @@ export function RhymeFinderTab({ onSelectWord }: RhymeFinderTabProps) {
         <label htmlFor="rhyme-query" className="text-xs font-medium text-muted-foreground">
           Query
         </label>
-        <input
-          id="rhyme-query"
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Enter Bisaya term…"
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-          autoComplete="off"
-        />
+        <div className="flex gap-2">
+          <input
+            id="rhyme-query"
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Enter Bisaya term…"
+            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            autoComplete="off"
+          />
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            aria-label="Search"
+          >
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+          </button>
+        </div>
       </form>
 
       <div className="flex-1 overflow-y-auto">

@@ -37,3 +37,23 @@ export interface RhymeResult {
   pageSize: number
   hasNextPage: boolean
 }
+
+export interface SynonymEntry {
+  word: string
+  pos?: string
+}
+
+export interface SynonymResult {
+  query: string
+  synonyms: SynonymEntry[]
+}
+
+export interface AnagramEntry {
+  word: string
+  pos?: string
+}
+
+export interface AnagramResult {
+  query: string
+  anagrams: AnagramEntry[]
+}
