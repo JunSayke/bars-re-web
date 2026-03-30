@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { SubmitEvent, useState } from "react"
 import { Search, Loader2 } from "lucide-react"
 import { useAnagramQuery } from "../../hooks/useAnagramQuery"
 import type { AnagramEntry } from "../../types/thesaurus.types"
@@ -72,7 +72,7 @@ export function AnagramFinderTab({ onSelectWord }: AnagramFinderTabProps) {
 
   const { result, isLoading, isError, refetch } = useAnagramQuery(submittedTerm)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     const trimmed = inputValue.trim()
     if (!trimmed) return

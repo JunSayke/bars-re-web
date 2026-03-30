@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { SubmitEvent, useState } from "react"
 import { Search, Loader2 } from "lucide-react"
 import { useSynonymQuery } from "../../hooks/useSynonymQuery"
 import type { SynonymEntry } from "../../types/thesaurus.types"
@@ -72,7 +72,7 @@ export function SynonymFinderTab({ onSelectWord }: SynonymFinderTabProps) {
 
   const { result, isLoading, isError, refetch } = useSynonymQuery(submittedTerm)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     const trimmed = inputValue.trim()
     if (!trimmed) return
