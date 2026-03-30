@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2, UserCircle2, Mail, KeyRound } from "lucide-react"
+import { Loader2, UserCircle2, Mail, KeyRound, Info } from "lucide-react"
+import { supabase } from "@/shared/config/supabase"
 import { useProfileQuery } from "../hooks/useProfileQuery"
 import { useUpdateProfileMutation } from "../hooks/useUpdateProfileMutation"
 import { useUpdateEmailMutation } from "../hooks/useUpdateEmailMutation"
@@ -25,6 +26,14 @@ export function ProfilePage() {
   const updateMutation = useUpdateProfileMutation()
   const emailMutation = useUpdateEmailMutation()
   const passwordMutation = useUpdatePasswordMutation()
+
+  const [isGoogleUser, setIsGoogleUser] = useState(false)
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const provider = data.user?.app_metadata?.provider
+      setIsGoogleUser(provider === "google")
+    })
+  }, [])
 
   const profileForm = useForm<UpdateProfilePayload>({
     resolver: zodResolver(updateProfilePayloadSchema),
@@ -188,6 +197,12 @@ export function ProfilePage() {
           </div>
         </CardHeader>
         <CardContent>
+          {isGoogleUser ? (
+            <div className="flex items-start gap-2 rounded-md border border-border/40 bg-muted/50 px-3 py-3 text-sm text-muted-foreground">
+              <Info className="mt-0.5 size-4 shrink-0" />
+              <span>Your email is managed by Google and cannot be changed here.</span>
+            </div>
+          ) : (
           <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="currentEmail">Current Email</Label>
@@ -220,6 +235,7 @@ export function ProfilePage() {
               )}
             </Button>
           </form>
+          )}
         </CardContent>
       </Card>
 
@@ -237,6 +253,12 @@ export function ProfilePage() {
           </div>
         </CardHeader>
         <CardContent>
+          {isGoogleUser ? (
+            <div className="flex items-start gap-2 rounded-md border border-border/40 bg-muted/50 px-3 py-3 text-sm text-muted-foreground">
+              <Info className="mt-0.5 size-4 shrink-0" />
+              <span>Your password is managed by Google and cannot be changed here.</span>
+            </div>
+          ) : (
           <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="currentPassword">Current Password</Label>
@@ -285,6 +307,7 @@ export function ProfilePage() {
               )}
             </Button>
           </form>
+          )}
         </CardContent>
       </Card>
 
