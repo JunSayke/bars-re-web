@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { SubmitEvent, useEffect, useState } from "react"
 import { Search, Loader2 } from "lucide-react"
 import { useRhymeQuery } from "../../hooks/useRhymeQuery"
 import type { RhymeCandidate } from "../../types/thesaurus.types"
@@ -80,7 +80,7 @@ export function RhymeFinderTab({ onSelectWord }: RhymeFinderTabProps) {
 
   const { result, isLoading, isError, refetch } = useRhymeQuery(submittedTerm, page)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     const trimmed = inputValue.trim()
     if (!trimmed) return

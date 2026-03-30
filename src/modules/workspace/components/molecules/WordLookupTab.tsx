@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { SubmitEvent, useEffect, useState } from "react"
 import { Diamond, Search, Loader2 } from "lucide-react"
 import { useWordLookupQuery } from "../../hooks/useWordLookupQuery"
 import { WordResultCard } from "../atoms/WordResultCard"
@@ -37,7 +37,7 @@ export function WordLookupTab({ initialTerm }: WordLookupTabProps) {
 
   const { result, isLoading, isError } = useWordLookupQuery(submittedTerm)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     const trimmed = inputValue.trim()
     if (!trimmed) return
