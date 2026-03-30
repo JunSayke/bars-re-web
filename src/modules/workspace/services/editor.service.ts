@@ -7,7 +7,7 @@
 
 import { supabase } from "@/shared/config/supabase"
 import { barSchema } from "../schemas/workspace.schema"
-import type { Bar, WritingSession } from "../schemas/workspace.schema"
+import type { Bar, WritingSession, SaveDraftPayload } from "../schemas/workspace.schema"
 
 // ---------------------------------------------------------------------------
 // Private helpers
@@ -48,7 +48,7 @@ export async function getSession(sessionId: string): Promise<WritingSession> {
 
   const { data, error } = await supabase
     .from("sessions")
-    .select("id, title, bar_content, beat_files(id, storage_path, bpm, file_size_bytes, source_type)")
+    .select("id, title, bar_content, editor_zoom, beat_files(id, storage_path, bpm, file_size_bytes, source_type)")
     .eq("id", sessionId)
     .eq("user_id", userId)
     .single()
@@ -92,20 +92,25 @@ export async function getSession(sessionId: string): Promise<WritingSession> {
     title: data.title,
     bars,
     beat,
+    editorZoom: data.editor_zoom ?? null,
   }
 }
 
 export async function saveDraft(
   sessionId: string,
-  bars: Bar[]
+  payload: SaveDraftPayload
 ): Promise<{ success: boolean }> {
   const userId = await getAuthUser()
 
-  const serialized = JSON.stringify(bars)
+  const updateObj: Record<string, unknown> = {
+    bar_content: JSON.stringify(payload.bars),
+    last_modified_at: new Date().toISOString(),
+  }
+  if (payload.editorZoom !== undefined) updateObj.editor_zoom = payload.editorZoom
 
   const { error } = await supabase
     .from("sessions")
-    .update({ bar_content: serialized, last_modified_at: new Date().toISOString() })
+    .update(updateObj)
     .eq("id", sessionId)
     .eq("user_id", userId)
 

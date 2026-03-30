@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { UiScaleWidget } from "@/components/atoms/UiScaleWidget"
 
 interface EditorTopNavProps {
   sessionTitle: string
@@ -21,6 +22,8 @@ export function EditorTopNav({ sessionTitle, onSettingsClick }: EditorTopNavProp
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
+        <UiScaleWidget />
+        <div className="w-px h-4 bg-border/60" />
         <button
           type="button"
           onClick={onSettingsClick}

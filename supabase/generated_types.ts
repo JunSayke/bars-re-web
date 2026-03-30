@@ -53,6 +53,7 @@ export type Database = {
         Row: {
           bar_content: string | null
           created_at: string | null
+          editor_zoom: number | null
           id: string
           last_modified_at: string | null
           title: string | null
@@ -62,6 +63,7 @@ export type Database = {
         Insert: {
           bar_content?: string | null
           created_at?: string | null
+          editor_zoom?: number | null
           id?: string
           last_modified_at?: string | null
           title?: string | null
@@ -71,6 +73,7 @@ export type Database = {
         Update: {
           bar_content?: string | null
           created_at?: string | null
+          editor_zoom?: number | null
           id?: string
           last_modified_at?: string | null
           title?: string | null

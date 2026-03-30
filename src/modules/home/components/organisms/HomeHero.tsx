@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { ROUTES } from "@/shared/constants/routes";
+import { HomeAuthLink } from "../atoms/HomeAuthLink";
 
 export function HomeHero() {
   return (
@@ -34,12 +33,9 @@ export function HomeHero() {
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-          <Link
-            href={ROUTES.AUTH.LOGIN}
-            className="performance-gradient text-white px-10 py-5 rounded-xl text-lg font-bold uppercase tracking-wider shadow-[0_10px_30px_rgba(139,92,246,0.3)] active:scale-95 transition-all"
-          >
+          <HomeAuthLink className="performance-gradient text-white px-10 py-5 rounded-xl text-lg font-bold uppercase tracking-wider shadow-[0_10px_30px_rgba(139,92,246,0.3)] active:scale-95 transition-all">
             Start Session
-          </Link>
+          </HomeAuthLink>
         </div>
       </div>
     </section>

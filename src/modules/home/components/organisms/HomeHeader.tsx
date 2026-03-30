@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { ROUTES } from "@/shared/constants/routes";
+import { HomeAuthLink } from "../atoms/HomeAuthLink";
 
 export function HomeHeader() {
   return (
@@ -10,12 +9,9 @@ export function HomeHeader() {
         </div>
 
         <div className="flex items-center gap-6">
-          <Link
-            href={ROUTES.AUTH.LOGIN}
-            className="performance-gradient text-white px-5 py-2 rounded-xl text-sm font-bold uppercase tracking-wider active:scale-95 transition-all"
-          >
+          <HomeAuthLink className="performance-gradient text-white px-5 py-2 rounded-xl text-sm font-bold uppercase tracking-wider active:scale-95 transition-all">
             Start Writing
-          </Link>
+          </HomeAuthLink>
         </div>
       </div>
     </header>

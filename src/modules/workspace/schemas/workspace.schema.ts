@@ -22,10 +22,12 @@ export const writingSessionSchema = z.object({
   title: z.string(),
   bars: z.array(barSchema),
   beat: beatSchema.nullable().optional(),
+  editorZoom: z.number().int().nullable().optional(),
 })
 
 export const saveDraftPayloadSchema = z.object({
   bars: z.array(barSchema),
+  editorZoom: z.number().int().optional(),
 })
 
 export const saveResultSchema = z.object({

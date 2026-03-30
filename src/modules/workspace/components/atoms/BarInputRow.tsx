@@ -12,6 +12,10 @@ interface BarInputRowProps {
   isRemoveDisabled: boolean
   /** When true, this input will receive focus. Used for keyboard-driven caret placement. */
   isFocused?: boolean
+  /** Move caret to the bar above this one. */
+  onNavigatePrev?: () => void
+  /** Move caret to the bar below this one. */
+  onNavigateNext?: () => void
 }
 
 function BarInputRowBase({
@@ -23,6 +27,8 @@ function BarInputRowBase({
   onPasteLines,
   isRemoveDisabled,
   isFocused,
+  onNavigatePrev,
+  onNavigateNext,
 }: BarInputRowProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -42,6 +48,14 @@ function BarInputRowBase({
       e.preventDefault()
       onRemove()
     }
+    if (e.key === "ArrowUp") {
+      e.preventDefault()
+      onNavigatePrev?.()
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault()
+      onNavigateNext?.()
+    }
   }
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
@@ -56,7 +70,7 @@ function BarInputRowBase({
 
   return (
     <div className="flex items-center gap-2 group">
-      <span className="w-6 shrink-0 text-xs font-mono text-muted-foreground select-none text-right">
+      <span className="w-6 shrink-0 text-[0.75em] font-mono text-muted-foreground select-none text-right">
         {String(lineNumber).padStart(2, "0")}
       </span>
       <input
@@ -66,7 +80,7 @@ function BarInputRowBase({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
-        className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground/50 py-1"
+        className="flex-1 bg-transparent border-none outline-none text-[0.875em] text-foreground placeholder:text-muted-foreground/50 py-1"
         placeholder="Type a bar…"
       />
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

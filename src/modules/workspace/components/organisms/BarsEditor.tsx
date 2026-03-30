@@ -21,6 +21,10 @@ interface BarsEditorProps {
   onMoveSection: (sectionKey: string, direction: "up" | "down") => void
   /** Bar ID that should receive focus (propagated from EditorPage caret switching). */
   focusBarId?: string | null
+  /** CSS font-size multiplier applied to the editor root (from `zoomLevel / 100`). */
+  zoomScale?: number
+  /** Arrow-key bar navigation callback. */
+  onNavigateBar?: (barId: string, direction: "up" | "down") => void
 }
 
 export function BarsEditor({
@@ -35,6 +39,8 @@ export function BarsEditor({
   onRemoveSection,
   onMoveSection,
   focusBarId,
+  zoomScale = 1,
+  onNavigateBar,
 }: BarsEditorProps) {
   const totalBarCount = sections.reduce((sum, s) => sum + s.bars.length, 0)
 
@@ -43,7 +49,7 @@ export function BarsEditor({
   )
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6" style={{ fontSize: `${zoomScale}rem` }}>
       {sections.map((section, idx) => {
         const offset = sectionOffsets[idx]
         return (
@@ -66,6 +72,7 @@ export function BarsEditor({
             isFirstSection={idx === 0}
             isLastSection={idx === sections.length - 1}
             focusBarId={focusBarId}
+            onNavigateBar={onNavigateBar}
           />
         )
       })}

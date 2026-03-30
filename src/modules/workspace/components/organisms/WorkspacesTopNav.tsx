@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { supabase } from "@/shared/config/supabase"
+import { UiScaleWidget } from "@/components/atoms/UiScaleWidget"
 
 interface WorkspacesTopNavProps {
   onSettingsClick?: () => void
@@ -38,6 +39,8 @@ export function WorkspacesTopNav({ onSettingsClick }: WorkspacesTopNavProps) {
 
   return (
     <header className="flex items-center justify-end gap-2 px-6 py-3 border-b border-border/40 bg-card shrink-0">
+      <UiScaleWidget />
+      <div className="w-px h-4 bg-border/60" />
       <button
         type="button"
         onClick={onSettingsClick}
