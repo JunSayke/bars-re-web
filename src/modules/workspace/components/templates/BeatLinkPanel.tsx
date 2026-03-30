@@ -181,7 +181,7 @@ export function BeatLinkPanel({ sessionId, onClose, onActivate, zIndex }: BeatLi
 
       {/* Body */}
       <div
-        className="flex-1 overflow-auto p-3 cursor-default flex flex-col gap-3"
+        className="flex-1 overflow-hidden p-3 cursor-default flex flex-col gap-3"
         onPointerDown={(e) => e.stopPropagation()}
       >
         {isLoading ? (
@@ -207,10 +207,12 @@ export function BeatLinkPanel({ sessionId, onClose, onActivate, zIndex }: BeatLi
           </>
         ) : (
           <>
-            {renderEmbedPlayer(beatLink)}
+            <div className="flex-1 min-h-0 overflow-hidden">
+              {renderEmbedPlayer(beatLink)}
+            </div>
             <button
               type="button"
-              className="self-start text-xs text-muted-foreground underline hover:text-foreground transition-colors"
+              className="self-start text-xs font-medium px-3 py-1.5 rounded border border-border bg-secondary hover:bg-secondary/80 text-foreground transition-colors cursor-pointer flex-shrink-0"
               onClick={() => setReplacing(true)}
             >
               Replace

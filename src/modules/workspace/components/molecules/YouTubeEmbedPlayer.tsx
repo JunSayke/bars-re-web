@@ -8,11 +8,11 @@ export function YouTubeEmbedPlayer({ url }: YouTubeEmbedPlayerProps) {
   const embedSrc = toYouTubeEmbedUrl(url)
 
   return (
-    <div className="overflow-hidden rounded-md">
+    <div className="h-full overflow-hidden rounded-md">
       <iframe
         src={embedSrc}
         width="100%"
-        height="152"
+        height="100%"
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         loading="lazy"
         title="YouTube player"

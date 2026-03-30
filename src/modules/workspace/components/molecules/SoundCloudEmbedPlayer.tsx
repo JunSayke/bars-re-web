@@ -8,11 +8,11 @@ export function SoundCloudEmbedPlayer({ url }: SoundCloudEmbedPlayerProps) {
   const embedSrc = toSoundCloudEmbedUrl(url)
 
   return (
-    <div className="overflow-hidden rounded-md">
+    <div className="h-full overflow-hidden rounded-md">
       <iframe
         src={embedSrc}
         width="100%"
-        height="166"
+        height="100%"
         allow="autoplay"
         loading="lazy"
         title="SoundCloud player"

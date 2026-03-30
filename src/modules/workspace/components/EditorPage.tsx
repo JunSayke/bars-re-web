@@ -93,11 +93,12 @@ export function EditorPage() {
   }
 
   // ── Panel z-index (bring-to-front) ────────────────────────────────────────
-  const panelZCounter = useRef(53)
+  const panelZCounter = useRef(54)
   const [panelZIndexes, setPanelZIndexes] = useState<Record<string, number>>({
     snippets: 50,
     thesaurus: 51,
     "beat-link": 52,
+    "ai-assistant": 53,
   })
   const handlePanelActivate = (key: string) => {
     setPanelZIndexes((prev) => ({ ...prev, [key]: panelZCounter.current++ }))
@@ -457,7 +458,11 @@ export function EditorPage() {
       <WorkspaceWindowMenu openPanels={openPanels} onToggle={handleTogglePanel} />
 
       {openPanels.has("ai-assistant") && (
-        <AiAssistantPanel onClose={() => handleTogglePanel("ai-assistant")}>
+        <AiAssistantPanel
+          onClose={() => handleTogglePanel("ai-assistant")}
+          onActivate={() => handlePanelActivate("ai-assistant")}
+          zIndex={panelZIndexes["ai-assistant"]}
+        >
           <AiFeedbackView />
         </AiAssistantPanel>
       )}
