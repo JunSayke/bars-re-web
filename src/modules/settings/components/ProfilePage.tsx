@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, UserCircle2, Mail, KeyRound, Info } from "lucide-react"
@@ -20,8 +21,10 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { ROUTES } from "@/shared/constants/routes"
 
 export function ProfilePage() {
+  const router = useRouter()
   const { profile, isLoading, isError } = useProfileQuery()
   const updateMutation = useUpdateProfileMutation()
   const emailMutation = useUpdateEmailMutation()
@@ -75,7 +78,7 @@ export function ProfilePage() {
   }
 
   const onPasswordSubmit = (data: UpdatePasswordPayload) => {
-    passwordMutation.mutate(data, { onSuccess: () => passwordForm.reset() })
+    passwordMutation.mutate(data, { onSuccess: () => router.push(ROUTES.AUTH.LOGIN) })
   }
 
   const shell = "mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-10 py-10"

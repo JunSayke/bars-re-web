@@ -56,7 +56,11 @@ export async function signupUser(dto: SignupDto): Promise<AuthUser> {
 }
 
 export async function forgotPassword(dto: ForgotPasswordDto): Promise<ForgotPasswordResponse> {
-  const { error } = await supabase.auth.resetPasswordForEmail(dto.email)
+  const { error } = await supabase.auth.resetPasswordForEmail(dto.email, {
+    // ?type=recovery is appended so the callback page can detect the recovery flow via URL
+    // even in PKCE mode (where gotrue may emit SIGNED_IN before PASSWORD_RECOVERY).
+    redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+  })
 
   if (error) throw toAuthError(error)
 
@@ -71,6 +75,8 @@ export async function resetPassword(
   })
 
   if (error) throw toAuthError(error)
+
+  await supabase.auth.signOut()
 
   return { message: "Password updated successfully" }
 }
