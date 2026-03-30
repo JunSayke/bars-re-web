@@ -1,9 +1,11 @@
 // @module: auth
 // @layer: service
 // @scope: module
-// @deps: @/shared/config/supabase, auth.types.ts, auth.schema.ts
+// @deps: @/shared/config/supabase.browser, auth.types.ts, auth.schema.ts
 
-import { supabase } from "@/shared/config/supabase"
+import { createSupabaseBrowserClient } from "@/shared/config/supabase.browser"
+
+const supabase = createSupabaseBrowserClient()
 import type { AuthUser, AuthError, ForgotPasswordResponse, ResetPasswordResponse } from "../types/auth.types"
 import type { LoginDto, SignupDto, ForgotPasswordDto, ResetPasswordDto } from "../schemas/auth.schema"
 

@@ -1,20 +1,10 @@
 // @module: shared
 // @layer: config
 // @scope: global
-// @deps: @supabase/supabase-js
+// @deps: @/shared/config/supabase.browser
 
-import { createClient } from "@supabase/supabase-js"
-import type { Database } from "./database.types"
+// Re-export the SSR-aware singleton so all existing `import { supabase }` callers
+// share the same GoTrueClient instance as those using createSupabaseBrowserClient().
+import { createSupabaseBrowserClient } from "./supabase.browser"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-if (!supabaseUrl) {
-  throw new Error("Missing environment variable: NEXT_PUBLIC_SUPABASE_URL")
-}
-
-if (!supabaseAnonKey) {
-  throw new Error("Missing environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY")
-}
-
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+export const supabase = createSupabaseBrowserClient()

@@ -1,13 +1,15 @@
 // @module: auth
 // @layer: hook
 // @scope: module
-// @deps: @/shared/config/supabase, @/shared/constants/routes, auth.types.ts
+// @deps: @/shared/config/supabase.browser, @/shared/constants/routes, auth.types.ts
 
 "use client"
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { supabase } from "@/shared/config/supabase"
+import { createSupabaseBrowserClient } from "@/shared/config/supabase.browser"
+
+const supabase = createSupabaseBrowserClient()
 import { ROUTES } from "@/shared/constants/routes"
 import type { AuthUser } from "../types/auth.types"
 
