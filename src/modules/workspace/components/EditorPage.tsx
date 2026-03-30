@@ -90,6 +90,17 @@ export function EditorPage() {
     })
   }
 
+  // ── Panel z-index (bring-to-front) ────────────────────────────────────────
+  const panelZCounter = useRef(53)
+  const [panelZIndexes, setPanelZIndexes] = useState<Record<string, number>>({
+    snippets: 50,
+    thesaurus: 51,
+    "beat-link": 52,
+  })
+  const handlePanelActivate = (key: string) => {
+    setPanelZIndexes((prev) => ({ ...prev, [key]: panelZCounter.current++ }))
+  }
+
   // ── Snippet form dialog state ─────────────────────────────────────────────
   const [snippetDialogOpen, setSnippetDialogOpen] = useState(false)
   const [editingSnippet, setEditingSnippet] = useState<Snippet | null>(null)
@@ -442,15 +453,28 @@ export function EditorPage() {
       <WorkspaceWindowMenu openPanels={openPanels} onToggle={handleTogglePanel} />
 
       {openPanels.has("thesaurus") && (
-        <ThesaurusPanel onClose={() => handleTogglePanel("thesaurus")} />
+        <ThesaurusPanel
+          onClose={() => handleTogglePanel("thesaurus")}
+          onActivate={() => handlePanelActivate("thesaurus")}
+          zIndex={panelZIndexes["thesaurus"]}
+        />
       )}
 
       {openPanels.has("beat-link") && (
-        <BeatLinkPanel sessionId={sessionId} onClose={() => handleTogglePanel("beat-link")} />
+        <BeatLinkPanel
+          sessionId={sessionId}
+          onClose={() => handleTogglePanel("beat-link")}
+          onActivate={() => handlePanelActivate("beat-link")}
+          zIndex={panelZIndexes["beat-link"]}
+        />
       )}
 
       {openPanels.has("snippets") && (
-        <SnippetsPanel onClose={() => handleTogglePanel("snippets")}>
+        <SnippetsPanel
+          onClose={() => handleTogglePanel("snippets")}
+          onActivate={() => handlePanelActivate("snippets")}
+          zIndex={panelZIndexes["snippets"]}
+        >
           <SnippetList
             snippets={snippets}
             isLoading={snippetsLoading}
