@@ -89,7 +89,7 @@ export async function getSession(sessionId: string): Promise<WritingSession> {
 
   return {
     id: data.id,
-    title: data.title,
+    title: data.title ?? "",
     bars,
     beat,
     editorZoom: data.editor_zoom ?? null,

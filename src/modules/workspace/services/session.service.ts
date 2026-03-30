@@ -54,13 +54,13 @@ export async function getSessions(): Promise<SessionSummary[]> {
 
   return (data ?? []).map((row) => ({
     id: row.id,
-    title: row.title,
+    title: row.title ?? "",
     topic: row.topic ?? "",
     previewSnippet: toPreviewSnippet(row.bar_content),
     thumbnailType: toThumbnailType(
       Array.isArray(row.beat_files) && row.beat_files.length > 0
     ),
-    lastModifiedAt: row.last_modified_at,
+    lastModifiedAt: row.last_modified_at ?? "",
   }))
 }
 
@@ -92,13 +92,13 @@ export async function createSession(
 
   return {
     id: data.id,
-    title: data.title,
+    title: data.title ?? "",
     topic: data.topic ?? "",
     previewSnippet: toPreviewSnippet(data.bar_content),
     thumbnailType: toThumbnailType(
       Array.isArray(data.beat_files) && data.beat_files.length > 0
     ),
-    lastModifiedAt: data.last_modified_at,
+    lastModifiedAt: data.last_modified_at ?? "",
   }
 }
 
@@ -120,13 +120,13 @@ export async function renameSession(
 
   return {
     id: data.id,
-    title: data.title,
+    title: data.title ?? "",
     topic: data.topic ?? "",
     previewSnippet: toPreviewSnippet(data.bar_content),
     thumbnailType: toThumbnailType(
       Array.isArray(data.beat_files) && data.beat_files.length > 0
     ),
-    lastModifiedAt: data.last_modified_at,
+    lastModifiedAt: data.last_modified_at ?? "",
   }
 }
 
@@ -148,13 +148,13 @@ export async function updateSessionTopic(
 
   return {
     id: data.id,
-    title: data.title,
+    title: data.title ?? "",
     topic: data.topic ?? "",
     previewSnippet: toPreviewSnippet(data.bar_content),
     thumbnailType: toThumbnailType(
       Array.isArray(data.beat_files) && data.beat_files.length > 0
     ),
-    lastModifiedAt: data.last_modified_at,
+    lastModifiedAt: data.last_modified_at ?? "",
   }
 }
 
