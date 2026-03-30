@@ -1,10 +1,13 @@
+import { Suspense } from "react"
+import { ProfilePage } from "@/modules/settings"
+import { profileMeta } from "@/modules/settings/meta"
 
-export const metadata = {
-  title: "Edit Profile - Bisaya AI Rap System",
-};
+export const metadata = profileMeta
 
-export default function SettingsProfilePage() {
+export default function SettingsProfileRoute() {
   return (
-    <div>Edit Profile Page</div>
-  );
+    <Suspense>
+      <ProfilePage />
+    </Suspense>
+  )
 }

@@ -34,6 +34,10 @@ function SectionToggle({
 }
 
 export function WordResultCard({ result, onHomonymClick }: WordResultCardProps) {
+  const hasExamples = result.examples.length > 0
+  const hasSuggestedWords = result.suggestedWords.length > 0
+  const hasHomonyms = result.homonyms.length > 0
+
   return (
     <div className="rounded-md border border-border bg-card p-3 flex flex-col gap-3">
       <p className="text-base font-bold text-foreground">{result.word}</p>
@@ -51,17 +55,46 @@ export function WordResultCard({ result, onHomonymClick }: WordResultCardProps) 
         </ul>
       </SectionToggle>
 
-      <SectionToggle title="Homonyms">
-        {result.homonyms.length > 0 ? (
+      {hasExamples && (
+        <SectionToggle title="Examples">
+          <ul className="flex flex-col gap-2">
+            {result.examples.map((ex, i) => (
+              <li key={i} className="flex flex-col gap-0.5">
+                <span className="text-xs text-foreground leading-relaxed">{ex.cebuano}</span>
+                <span className="text-xs text-muted-foreground leading-relaxed italic">{ex.english}</span>
+              </li>
+            ))}
+          </ul>
+        </SectionToggle>
+      )}
+
+      {hasSuggestedWords && (
+        <SectionToggle title="Suggested Words">
+          <ul className="flex flex-col gap-0.5">
+            {result.suggestedWords.map((s, i) => (
+              <li key={i}>
+                <button
+                  type="button"
+                  onClick={() => onHomonymClick(s.word)}
+                  className="w-full text-left text-xs text-foreground px-1 py-0.5 rounded hover:bg-muted transition-colors cursor-pointer"
+                >
+                  {s.word}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </SectionToggle>
+      )}
+
+      {hasHomonyms && !hasSuggestedWords && (
+        <SectionToggle title="Homonyms">
           <div className="flex flex-wrap gap-1.5">
             {result.homonyms.map((h, i) => (
               <HomonymChip key={i} word={h.word} onClick={onHomonymClick} />
             ))}
           </div>
-        ) : (
-          <p className="text-xs text-muted-foreground italic">No homonyms found.</p>
-        )}
-      </SectionToggle>
+        </SectionToggle>
+      )}
 
       <SectionToggle title="Translations">
         <ul className="flex flex-col gap-1">

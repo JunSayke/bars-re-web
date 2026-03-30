@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Diamond } from "lucide-react"
 import { useWordLookupQuery } from "../../hooks/useWordLookupQuery"
 import { WordResultCard } from "../atoms/WordResultCard"
@@ -20,9 +20,20 @@ function LoadingSkeleton() {
   )
 }
 
-export function WordLookupTab() {
+interface WordLookupTabProps {
+  initialTerm?: string
+}
+
+export function WordLookupTab({ initialTerm }: WordLookupTabProps) {
   const [inputValue, setInputValue] = useState("")
   const [submittedTerm, setSubmittedTerm] = useState("")
+
+  useEffect(() => {
+    if (initialTerm) {
+      setInputValue(initialTerm)
+      setSubmittedTerm(initialTerm)
+    }
+  }, [initialTerm])
 
   const { result, isLoading, isError } = useWordLookupQuery(submittedTerm)
 
@@ -45,7 +56,8 @@ export function WordLookupTab() {
     result !== null &&
     result.definitions.length === 0 &&
     result.homonyms.length === 0 &&
-    result.translations.length === 0
+    result.translations.length === 0 &&
+    result.suggestedWords.length === 0
 
   return (
     <div className="flex flex-col gap-4 h-full">

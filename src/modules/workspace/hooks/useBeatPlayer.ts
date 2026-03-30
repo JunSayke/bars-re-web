@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { toast } from "sonner"
 import { useImportBeatMutation } from "./useImportBeatMutation"
 
 interface BeatPlayerState {
@@ -13,6 +14,7 @@ interface BeatPlayerState {
 }
 
 export interface UseBeatPlayerReturn extends BeatPlayerState {
+  isUploading: boolean
   loadFile: (file: File) => void
   loadUrl: (url: string, metadata: { fileName: string; bpm: number | null }) => void
   togglePlay: () => void
@@ -36,7 +38,7 @@ export function useBeatPlayer(sessionId: string): UseBeatPlayerReturn {
     fileName: null,
   })
 
-  const { mutate: importBeat } = useImportBeatMutation(sessionId)
+  const { mutate: importBeat, isPending: isUploading } = useImportBeatMutation(sessionId)
 
   // Initialise the audio element once on mount
   useEffect(() => {
@@ -105,10 +107,14 @@ export function useBeatPlayer(sessionId: string): UseBeatPlayerReturn {
         bpm: null,
       }))
 
-      // Fire the mock mutation to get BPM + server beat URL
+      // Upload to server and get BPM + signed URL
       importBeat(file, {
         onSuccess: (record) => {
           setState((prev) => ({ ...prev, bpm: record.bpm, fileName: record.fileName }))
+        },
+        onError: () => {
+          toast.error("Failed to upload beat. Please try again.")
+          setState((prev) => ({ ...prev, fileName: null, bpm: null, isLoadingAudio: false }))
         },
       })
     },
@@ -174,6 +180,7 @@ export function useBeatPlayer(sessionId: string): UseBeatPlayerReturn {
 
   return {
     ...state,
+    isUploading,
     loadFile,
     loadUrl,
     togglePlay,

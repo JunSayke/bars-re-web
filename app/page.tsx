@@ -1,10 +1,8 @@
 
+import { HomePage } from "@/modules/home";
+
 export const metadata = {
-  title: "Bisaya AI Rap System - Welcome",
+  title: "BARS — Bisaya AI Rap",
 };
 
-export default function Home() {
-  return (
-    <div>Welcome to the Bisaya AI Rap System</div>
-  );
-}
+export default HomePage;

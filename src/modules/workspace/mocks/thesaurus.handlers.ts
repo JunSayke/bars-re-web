@@ -1,17 +1,15 @@
 import { http, HttpResponse } from "msw"
-import { mockThesaurusEntries } from "./thesaurus.fixtures"
-
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
+import { mockThesaurusEntries, mockRhymeResult } from "./thesaurus.fixtures"
 
 export const thesaurusHandlers = [
-  http.get(`${BASE}/thesaurus/lookup`, ({ request }) => {
+  http.get("/api/thesaurus/lookup", ({ request }) => {
     const url = new URL(request.url)
     const query = url.searchParams.get("query")?.trim().toLowerCase() ?? ""
 
     if (!query) {
       return HttpResponse.json(
-        { word: "", definitions: [], homonyms: [], translations: [] },
-        { status: 200 }
+        { error: "query is required" },
+        { status: 400 }
       )
     }
 
@@ -21,11 +19,37 @@ export const thesaurusHandlers = [
 
     if (!match) {
       return HttpResponse.json(
-        { word: query, definitions: [], homonyms: [], translations: [] },
+        {
+          word: query,
+          definitions: [],
+          homonyms: [],
+          translations: [],
+          examples: [],
+          suggestedWords: [{ word: query, shortDefinition: "fuzzy match" }],
+        },
         { status: 200 }
       )
     }
 
     return HttpResponse.json(match)
+  }),
+
+  http.get("/api/thesaurus/rhyme", ({ request }) => {
+    const url = new URL(request.url)
+    const query = url.searchParams.get("query")?.trim() ?? ""
+    const page = parseInt(url.searchParams.get("page") ?? "1", 10)
+
+    if (!query) {
+      return HttpResponse.json(
+        { error: "query is required" },
+        { status: 400 }
+      )
+    }
+
+    return HttpResponse.json({
+      ...mockRhymeResult,
+      query,
+      page,
+    })
   }),
 ]

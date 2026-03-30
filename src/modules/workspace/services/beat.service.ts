@@ -44,12 +44,19 @@ export async function uploadBeat(sessionId: string, file: File): Promise<Beat> {
     .eq("session_id", sessionId)
 
   if (existingBeats && existingBeats.length > 0) {
-    const paths = existingBeats.map((b) => b.storage_path)
-    await supabase.storage.from("beats").remove(paths)
+    // Delete DB records first (authoritative), then clean up storage
     await supabase
       .from("beat_files")
       .delete()
       .in("id", existingBeats.map((b) => b.id))
+
+    const paths = existingBeats.map((b) => b.storage_path).filter(Boolean) as string[]
+    if (paths.length > 0) {
+      const { error: cleanupError } = await supabase.storage.from("beats").remove(paths)
+      if (cleanupError) {
+        console.warn("Beat storage cleanup failed:", cleanupError.message)
+      }
+    }
   }
 
   const storagePath = `${userId}/${sessionId}/${Date.now()}-${sanitizeFileName(file.name)}`
@@ -74,9 +81,13 @@ export async function uploadBeat(sessionId: string, file: File): Promise<Beat> {
 
   if (insertError) throw insertError
 
-  const { data: signedUrlData } = await supabase.storage
+  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
     .from("beats")
     .createSignedUrl(storagePath, 3600)
+
+  if (signedUrlError) {
+    console.warn("Failed to create signed URL for beat:", signedUrlError.message)
+  }
 
   // --- BPM detection (silent failure: never aborts the upload) ---
   let detectedBpm: number | null = null
@@ -107,16 +118,19 @@ export async function deleteBeat(
 ): Promise<void> {
   await getAuthUser()
 
-  const { error: storageError } = await supabase.storage
-    .from("beats")
-    .remove([storagePath])
-
-  if (storageError) throw storageError
-
+  // Delete DB record first (authoritative), then clean up storage
   const { error: dbError } = await supabase
     .from("beat_files")
     .delete()
     .eq("id", beatFileId)
 
   if (dbError) throw dbError
+
+  const { error: storageError } = await supabase.storage
+    .from("beats")
+    .remove([storagePath])
+
+  if (storageError) {
+    console.warn("Beat storage cleanup failed:", storageError.message)
+  }
 }

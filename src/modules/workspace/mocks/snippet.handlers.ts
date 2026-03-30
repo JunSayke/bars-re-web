@@ -1,42 +1,79 @@
+// @module: workspace
+// @layer: mock
+// @scope: module
+// @deps: snippet.fixtures.ts
+
 import { http, HttpResponse } from "msw"
 import type { Snippet } from "../types/snippet.types"
 import { buildMockSnippet, mockSnippets } from "./snippet.fixtures"
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://localhost:54321"
 
 let snippets: Snippet[] = [...mockSnippets]
 
+function toSnippetRow(snippet: Snippet) {
+  return {
+    id: snippet.id,
+    user_id: snippet.userId,
+    title: snippet.title,
+    content: snippet.content,
+    tags: snippet.tags,
+    created_at: snippet.createdAt,
+    updated_at: snippet.updatedAt,
+  }
+}
+
 export const snippetHandlers = [
-  http.get(`${BASE}/snippets`, () => {
-    return HttpResponse.json(snippets)
+  http.get(`${SUPABASE_URL}/rest/v1/snippets`, () => {
+    return HttpResponse.json(snippets.map(toSnippetRow))
   }),
 
-  http.post(`${BASE}/snippets`, async ({ request }) => {
+  http.post(`${SUPABASE_URL}/rest/v1/snippets`, async ({ request }) => {
     if (snippets.length >= 200) {
       return HttpResponse.json({ message: "Snippet limit reached" }, { status: 422 })
     }
-    const body = (await request.json()) as { title: string; content: string; tags: string[] }
+    const body = (await request.json()) as any
     const newSnippet = buildMockSnippet({
       title: body.title,
       content: body.content,
-      tags: (body.tags ?? []) as Snippet["tags"],
+      tags: body.tags ?? [],
     })
     snippets = [newSnippet, ...snippets]
-    return HttpResponse.json(newSnippet, { status: 201 })
+
+    const row = toSnippetRow(newSnippet)
+    const wantsSingle = request.headers.get("Accept")?.includes("vnd.pgrst.object")
+    return HttpResponse.json(wantsSingle ? row : [row], { status: 201 })
   }),
 
-  http.patch(`${BASE}/snippets/:id`, async ({ params, request }) => {
-    const { id } = params as { id: string }
-    const body = (await request.json()) as Partial<Snippet>
+  http.patch(`${SUPABASE_URL}/rest/v1/snippets`, async ({ request }) => {
+    const url = new URL(request.url)
+    const idParam = url.searchParams.get("id")
+    const id = idParam ? idParam.replace("eq.", "") : ""
+
+    const body = (await request.json()) as any
     const idx = snippets.findIndex((s) => s.id === id)
-    if (idx === -1) return new HttpResponse(null, { status: 404 })
-    snippets[idx] = { ...snippets[idx], ...body, updatedAt: new Date().toISOString() }
-    return HttpResponse.json(snippets[idx])
+    if (idx !== -1) {
+      if (body.title !== undefined) snippets[idx].title = body.title
+      if (body.content !== undefined) snippets[idx].content = body.content
+      if (body.tags !== undefined) snippets[idx].tags = body.tags
+      snippets[idx].updatedAt = new Date().toISOString()
+    }
+
+    if (request.headers.get("Prefer")?.includes("return=representation") && idx !== -1) {
+      const row = toSnippetRow(snippets[idx])
+      const wantsSingle = request.headers.get("Accept")?.includes("vnd.pgrst.object")
+      return HttpResponse.json(wantsSingle ? row : [row])
+    }
+
+    return new HttpResponse(null, { status: 204 })
   }),
 
-  http.delete(`${BASE}/snippets/:id`, ({ params }) => {
-    const { id } = params as { id: string }
+  http.delete(`${SUPABASE_URL}/rest/v1/snippets`, ({ request }) => {
+    const url = new URL(request.url)
+    const idParam = url.searchParams.get("id")
+    const id = idParam ? idParam.replace("eq.", "") : ""
+
     snippets = snippets.filter((s) => s.id !== id)
-    return new HttpResponse(null, { status: 200 })
+    return new HttpResponse(null, { status: 204 })
   }),
 ]

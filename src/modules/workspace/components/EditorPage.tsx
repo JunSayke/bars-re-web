@@ -24,6 +24,8 @@ import { SnippetFormDialog } from "./molecules/SnippetFormDialog"
 import { EditorShell } from "./templates/EditorShell"
 import { SnippetsPanel } from "./templates/SnippetsPanel"
 import { ThesaurusPanel } from "./templates/ThesaurusPanel"
+import { AiAssistantPanel } from "./templates/AiAssistantPanel"
+import { AiFeedbackView } from "./organisms/AiFeedbackView"
 import { BeatLinkPanel } from "./templates/BeatLinkPanel"
 
 function groupBars(bars: Bar[]): SectionData[] {
@@ -208,24 +210,26 @@ export function EditorPage() {
   const isAtWordLimit = wordCount >= 1000
 
   // Keep refs current so the 30s interval always reads latest values
+  const isUploadingRef = useRef(false)
   useEffect(() => { barsRef.current = bars }, [bars])
   useEffect(() => { isAtWordLimitRef.current = isAtWordLimit }, [isAtWordLimit])
+  useEffect(() => { isUploadingRef.current = beatPlayer.isUploading }, [beatPlayer.isUploading])
 
-  // 1s debounce auto-save
+  // 1s debounce auto-save — paused while a beat upload is in flight
   useEffect(() => {
-    if (!session || bars.length === 0 || isAtWordLimit) return
+    if (!session || bars.length === 0 || isAtWordLimit || beatPlayer.isUploading) return
     const timer = setTimeout(() => {
       saveMutate({ bars })
     }, 1_000)
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bars])
+  }, [bars, beatPlayer.isUploading])
 
   // 30s ceiling auto-save — uses refs to avoid stale closure
   useEffect(() => {
     if (!session) return
     const interval = setInterval(() => {
-      if (isAtWordLimitRef.current || !barsRef.current.length) return
+      if (isAtWordLimitRef.current || !barsRef.current.length || isUploadingRef.current) return
       saveMutate({ bars: barsRef.current })
     }, 30_000)
     return () => clearInterval(interval)
@@ -451,6 +455,12 @@ export function EditorPage() {
       </EditorShell>
 
       <WorkspaceWindowMenu openPanels={openPanels} onToggle={handleTogglePanel} />
+
+      {openPanels.has("ai-assistant") && (
+        <AiAssistantPanel onClose={() => handleTogglePanel("ai-assistant")}>
+          <AiFeedbackView />
+        </AiAssistantPanel>
+      )}
 
       {openPanels.has("thesaurus") && (
         <ThesaurusPanel

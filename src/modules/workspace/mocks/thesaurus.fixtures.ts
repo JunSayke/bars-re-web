@@ -1,4 +1,4 @@
-import type { WordLookupResult } from "../types/thesaurus.types"
+import type { WordLookupResult, RhymeResult } from "../types/thesaurus.types"
 
 export const mockThesaurusEntries: WordLookupResult[] = [
   {
@@ -14,6 +14,10 @@ export const mockThesaurusEntries: WordLookupResult[] = [
       { language: "English", translation: "poem" },
       { language: "English", translation: "verse" },
     ],
+    examples: [
+      { cebuano: "Nagsulat siya og balak alang sa iyang minahal.", english: "She wrote a poem for her beloved." },
+    ],
+    suggestedWords: [],
   },
   {
     word: "kanta",
@@ -28,6 +32,8 @@ export const mockThesaurusEntries: WordLookupResult[] = [
       { language: "English", translation: "song" },
       { language: "English", translation: "sing (verb)" },
     ],
+    examples: [],
+    suggestedWords: [],
   },
   {
     word: "damgo",
@@ -42,6 +48,8 @@ export const mockThesaurusEntries: WordLookupResult[] = [
       { language: "English", translation: "dream" },
       { language: "English", translation: "vision" },
     ],
+    examples: [],
+    suggestedWords: [],
   },
   {
     word: "gugma",
@@ -51,6 +59,8 @@ export const mockThesaurusEntries: WordLookupResult[] = [
       { language: "English", translation: "love" },
       { language: "English", translation: "affection" },
     ],
+    examples: [],
+    suggestedWords: [],
   },
   {
     word: "kinabuhi",
@@ -65,5 +75,21 @@ export const mockThesaurusEntries: WordLookupResult[] = [
       { language: "English", translation: "life" },
       { language: "English", translation: "existence" },
     ],
+    examples: [],
+    suggestedWords: [],
   },
 ]
+
+export const mockWordLookupResult: WordLookupResult = mockThesaurusEntries[0]
+
+export const mockRhymeResult: RhymeResult = {
+  query: "dagat",
+  candidates: [
+    { word: "langit", rhymeType: "perfect", score: 0.95, syllableCount: 2 },
+    { word: "hangin", rhymeType: "family", score: 0.8, syllableCount: 2 },
+    { word: "tubig", rhymeType: "additive", score: 0.7, syllableCount: 2 },
+  ],
+  page: 1,
+  pageSize: 20,
+  hasNextPage: false,
+}

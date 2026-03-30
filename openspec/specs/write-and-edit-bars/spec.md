@@ -4,7 +4,7 @@
 TBD - created by archiving change workspace-editor-write-and-edit-bars. Update Purpose after archive.
 ## Requirements
 ### Requirement: Display bar input rows organized by section
-The editor SHALL render a scrollable list of bar input rows grouped under named section labels (e.g., VERSE 1, CHORUS, VERSE 2). Each section label SHALL be displayed as a left-bordered uppercase heading. Bar rows SHALL be numbered sequentially across all sections (01, 02, 03…). Each row SHALL contain a single-line text input where the user types one lyric line.
+The editor SHALL render a scrollable list of bar input rows grouped under named section labels (e.g., VERSE 1, CHORUS, VERSE 2). Each section label SHALL be displayed as a left-bordered uppercase heading. Bar rows SHALL be numbered sequentially across all sections (01, 02, 03…). Each row SHALL contain a single-line text input where the user types one lyric line. The Thesaurus panel accessible from the editor SHALL resolve word data from the bundled `@junsayke/cebuano-thesaurus` dictionary via the internal Route Handler instead of an external API.
 
 #### Scenario: Bars display in correct section groupings
 - **WHEN** the editor loads a session with bars belonging to multiple sections
