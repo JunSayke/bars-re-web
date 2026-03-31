@@ -1,7 +1,7 @@
 // @module:workspace @layer:action @scope:module:workspace @deps:schema:thesaurus.schema
 "use server";
 
-import { generateObject, TypeValidationError } from "ai";
+import { generateText, Output, TypeValidationError } from "ai";
 import { google } from "@/shared/lib/ai/google.client";
 import { groq } from "@/shared/lib/ai/groq.client";
 import { WordplayResponseSchema } from "../schemas/thesaurus.schema";
@@ -75,17 +75,16 @@ async function generateWithFallback(targetWord: string, contextString: string) {
     try {
       console.log(`[AI] Trying ${provider.name} for wordplay...`);
 
-      const { object } = await generateObject({
+      const { output } = await generateText({
         model: provider.model,
-        output: 'object', // Explicitly define output to resolve the deprecation warning
-        schema: WordplayResponseSchema,
+        output: Output.object({ schema: WordplayResponseSchema }),
         system: BISAYA_WORDPLAY_SYSTEM_PROMPT,
         prompt: `Concept: "${targetWord}"\nAVAILABLE CONTEXT (RAG): ${contextString}`,
         temperature: 0.7, // slightly higher temperature for creative wordplay
       });
 
       console.log(`[AI] Success with ${provider.name}`);
-      return object;
+      return output;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.warn(`[AI] ${provider.name} failed: ${message}`);
