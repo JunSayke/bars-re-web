@@ -46,13 +46,23 @@ export function ThesaurusTabs() {
         ))}
       </div>
 
-      {/* Tab Content Area */}
+      {/* Tab Content Area — all tabs stay mounted to preserve query state */}
       <div className="flex-1 overflow-y-auto p-1">
-        {activeTab === "lookup" && <WordLookupTab initialTerm={activeWord} />}
-        {activeTab === "rhymes" && <RhymeFinderTab onSelectWord={handleSelectWord} />}
-        {activeTab === "synonyms" && <SynonymFinderTab onSelectWord={handleSelectWord} />}
-        {activeTab === "anagrams" && <AnagramFinderTab onSelectWord={handleSelectWord} />}
-        {activeTab === "wordplay" && <WordplayTab />}
+        <div className={activeTab !== "lookup" ? "hidden" : ""}>
+          <WordLookupTab initialTerm={activeWord} />
+        </div>
+        <div className={activeTab !== "rhymes" ? "hidden" : ""}>
+          <RhymeFinderTab onSelectWord={handleSelectWord} />
+        </div>
+        <div className={activeTab !== "synonyms" ? "hidden" : ""}>
+          <SynonymFinderTab onSelectWord={handleSelectWord} />
+        </div>
+        <div className={activeTab !== "anagrams" ? "hidden" : ""}>
+          <AnagramFinderTab onSelectWord={handleSelectWord} />
+        </div>
+        <div className={activeTab !== "wordplay" ? "hidden" : ""}>
+          <WordplayTab />
+        </div>
       </div>
     </div>
   );

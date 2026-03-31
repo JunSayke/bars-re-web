@@ -14,9 +14,10 @@ interface ResetPasswordFormProps {
   onSubmit: (data: ResetPasswordDto) => void
   isPending: boolean
   serverError?: AuthError | null
+  hasToken?: boolean
 }
 
-export function ResetPasswordForm({ onSubmit, isPending, serverError }: ResetPasswordFormProps) {
+export function ResetPasswordForm({ onSubmit, isPending, serverError, hasToken = true }: ResetPasswordFormProps) {
   const {
     register,
     handleSubmit,
@@ -62,7 +63,13 @@ export function ResetPasswordForm({ onSubmit, isPending, serverError }: ResetPas
 
       <PasswordRequirements password={newPassword} />
 
-      <Button type="submit" className="w-full" disabled={isPending}>
+      {!hasToken && (
+        <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          No reset token found. Please use the link from your password reset email.
+        </p>
+      )}
+
+      <Button type="submit" className="w-full" disabled={isPending || !hasToken}>
         {isPending ? (
           <>
             <Loader2 className="mr-2 size-4 animate-spin" />
