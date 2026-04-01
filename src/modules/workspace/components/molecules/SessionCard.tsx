@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import type { MouseEvent } from "react"
-import { Play } from "lucide-react"
+import { Loader2, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SessionThumbnail } from "../atoms/SessionThumbnail"
 import { TopicBadge } from "../atoms/TopicBadge"
@@ -26,9 +26,11 @@ interface SessionCardProps {
   onRename: () => void
   onEditTopic: () => void
   onDelete: () => void
+  isOpening?: boolean
+  isDisabled?: boolean
 }
 
-export function SessionCard({ session, onOpen, onRename, onEditTopic, onDelete }: SessionCardProps) {
+export function SessionCard({ session, onOpen, onRename, onEditTopic, onDelete, isOpening = false, isDisabled = false }: SessionCardProps) {
   const [isTopicExpanded, setIsTopicExpanded] = useState(false)
 
   function handleTopicToggle(e: MouseEvent) {
@@ -37,12 +39,13 @@ export function SessionCard({ session, onOpen, onRename, onEditTopic, onDelete }
   }
 
   return (
-    <div className="group flex items-center gap-3 overflow-hidden rounded-lg border bg-card px-4 py-3 transition-colors hover:bg-accent/40">
+    <div className={`group flex items-center gap-3 overflow-hidden rounded-lg border bg-card px-4 py-3 transition-colors${isDisabled ? " cursor-not-allowed opacity-60" : " hover:bg-accent/40"}`}>
       {/* Clickable area */}
       <button
-        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        className="flex min-w-0 flex-1 items-center gap-3 text-left disabled:pointer-events-none"
         onClick={onOpen}
         type="button"
+        disabled={isDisabled}
       >
         <SessionThumbnail thumbnailType={session.thumbnailType} />
         <div className="min-w-0 flex-1">
@@ -59,8 +62,13 @@ export function SessionCard({ session, onOpen, onRename, onEditTopic, onDelete }
         </div>
       </button>
 
+      {/* Loading indicator */}
+      {isOpening && (
+        <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />
+      )}
+
       {/* Actions */}
-      <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className={`flex shrink-0 items-center gap-1 transition-opacity${isOpening ? " opacity-0" : " opacity-0 group-hover:opacity-100"}`}>
         {/* TODO: wire up beat playback in transaction 4.4 */}
         <Button variant="ghost" size="icon-sm" disabled title="Play beat (coming soon)">
           <Play className="size-4" />
