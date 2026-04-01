@@ -1,17 +1,24 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { supabase } from "@/shared/config/supabase"
 import { UiScaleWidget } from "@/components/atoms/UiScaleWidget"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useProfileQuery } from "@/modules/settings"
 
 export function WorkspacesTopNav() {
+  const router = useRouter()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [navigating, setNavigating] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { profile } = useProfileQuery()
+
+  function navigate(href: string) {
+    setNavigating(true)
+    router.push(href)
+  }
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -38,18 +45,22 @@ export function WorkspacesTopNav() {
   }
 
   return (
-    <header className="flex items-center justify-end gap-2 px-6 py-3 border-b border-border/40 bg-card shrink-0">
-      <UiScaleWidget />
-      <div className="w-px h-4 bg-border/60" />
-      <Link
-        href="/settings/profile"
-        className="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-        aria-label="Settings"
-      >
-        <span className="material-symbols-outlined text-base" aria-hidden>
-          settings
-        </span>
-      </Link>
+    <>
+      {navigating && <div className="fixed inset-0 z-[9999] cursor-wait" />}
+      <header className="flex items-center justify-end gap-2 px-6 py-3 border-b border-border/40 bg-card shrink-0">
+        <UiScaleWidget />
+        <div className="w-px h-4 bg-border/60" />
+        <button
+          type="button"
+          onClick={() => navigate("/settings/profile")}
+          disabled={navigating}
+          className="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-wait"
+          aria-label="Settings"
+        >
+          <span className="material-symbols-outlined text-base" aria-hidden>
+            settings
+          </span>
+        </button>
 
       {/* User avatar + dropdown */}
       <div className="relative" ref={dropdownRef}>
@@ -84,7 +95,8 @@ export function WorkspacesTopNav() {
             </button>
           </div>
         )}
-      </div>
-    </header>
+        </div>
+      </header>
+    </>
   )
 }

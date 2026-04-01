@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { supabase } from "@/shared/config/supabase"
 import { UiScaleWidget } from "@/components/atoms/UiScaleWidget"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -9,10 +9,17 @@ import { useProfileQuery } from "../hooks/useProfileQuery"
 
 
 export function SettingsTopNav() {
+  const router = useRouter()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [navigating, setNavigating] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { profile } = useProfileQuery()
+
+  function navigate(href: string) {
+    setNavigating(true)
+    router.push(href)
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -37,24 +44,28 @@ export function SettingsTopNav() {
   }
 
   return (
-    <header className="flex items-center gap-4 px-6 py-3 border-b border-border/40 bg-card shrink-0">
-      <Link
-        href="/workspaces"
-        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
-      >
-        <span className="text-sm">←</span>
-        <span>Back to Library</span>
-      </Link>
+    <>
+      {navigating && <div className="fixed inset-0 z-[9999] cursor-wait" />}
+      <header className="flex items-center gap-4 px-6 py-3 border-b border-border/40 bg-card shrink-0">
+        <button
+          type="button"
+          onClick={() => navigate("/workspaces")}
+          disabled={navigating}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0 disabled:opacity-50 disabled:cursor-wait"
+        >
+          <span className="text-sm">←</span>
+          <span>Back to Library</span>
+        </button>
 
-      <div className="flex-1 min-w-0">
-        <span className="text-sm font-semibold text-foreground">Settings</span>
-      </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-sm font-semibold text-foreground">Settings</span>
+        </div>
 
-      <div className="flex items-center gap-2 shrink-0">
-        <UiScaleWidget />
-        <div className="w-px h-4 bg-border/60" />
+        <div className="flex items-center gap-2 shrink-0">
+          <UiScaleWidget />
+          <div className="w-px h-4 bg-border/60" />
 
-        <div className="relative" ref={dropdownRef}>
+          <div className="relative" ref={dropdownRef}>
           <button
             type="button"
             onClick={() => setDropdownOpen((prev) => !prev)}
@@ -89,5 +100,6 @@ export function SettingsTopNav() {
         </div>
       </div>
     </header>
+    </>
   )
 }
