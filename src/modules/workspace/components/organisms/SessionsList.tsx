@@ -31,6 +31,7 @@ export function SessionsList() {
   const [renameTarget, setRenameTarget] = useState<SessionSummary | null>(null)
   const [editTopicTarget, setEditTopicTarget] = useState<SessionSummary | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<SessionSummary | null>(null)
+  const [openingId, setOpeningId] = useState<string | null>(null)
 
   function handleRenameConfirm(newTitle: string) {
     if (!renameTarget) return
@@ -61,10 +62,15 @@ export function SessionsList() {
             <SessionCard
               key={session.id}
               session={session}
-              onOpen={() => router.push(`/workspaces/editor?id=${session.id}`)}
+              onOpen={() => {
+                setOpeningId(session.id)
+                router.push(`/workspaces/editor?id=${session.id}`)
+              }}
               onRename={() => setRenameTarget(session)}
               onEditTopic={() => setEditTopicTarget(session)}
               onDelete={() => setDeleteTarget(session)}
+              isOpening={openingId === session.id}
+              isDisabled={openingId !== null}
             />
           ))
         )}

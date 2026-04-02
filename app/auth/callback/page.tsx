@@ -22,7 +22,7 @@ export default function AuthCallbackPage() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && isRecoveryUrl)) {
-        router.replace("/reset")
+        router.replace("/reset?recovery=1")
       } else if (event === "INITIAL_SESSION") {
         // When auth params are present, wait for the real event (SIGNED_IN / PASSWORD_RECOVERY)
         // that fires after Supabase processes the URL. When absent (direct visit), use the

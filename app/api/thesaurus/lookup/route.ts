@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { lookup, fuzzySearch } from "@junsayke/cebuano-thesaurus"
+export const runtime = "nodejs"
 import type {
   WordLookupResult,
   HomonymEntry,

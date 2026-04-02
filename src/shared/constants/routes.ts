@@ -12,7 +12,6 @@ export const ROUTES = {
   },
   SETTINGS: {
     PROFILE: "/settings/profile",
-    ACCOUNT: "/settings/account",
   },
   WORKSPACES: {
     INDEX: "/workspaces",
