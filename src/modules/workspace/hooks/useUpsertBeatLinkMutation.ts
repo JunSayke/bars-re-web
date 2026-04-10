@@ -15,6 +15,7 @@ export function useUpsertBeatLinkMutation() {
     mutationFn: ({ sessionId, url }) => upsertBeatLink(sessionId, url),
     onSuccess: (_, { sessionId }) => {
       void queryClient.invalidateQueries({ queryKey: workspaceKeys.beatLink(sessionId) })
+      void queryClient.invalidateQueries({ queryKey: workspaceKeys.beatLibrary() })
     },
   })
 }

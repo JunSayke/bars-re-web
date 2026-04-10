@@ -48,7 +48,7 @@ export async function getSession(sessionId: string): Promise<WritingSession> {
 
   const { data, error } = await supabase
     .from("sessions")
-    .select("id, title, bar_content, editor_zoom, beat_files(id, storage_path, bpm, file_size_bytes, source_type)")
+    .select("id, title, bar_content, editor_zoom, metadata")
     .eq("id", sessionId)
     .eq("user_id", userId)
     .single()
@@ -58,32 +58,41 @@ export async function getSession(sessionId: string): Promise<WritingSession> {
   const bars = deserializeBars(data.bar_content)
 
   let beat: WritingSession["beat"] = undefined
-  const beatFiles = Array.isArray(data.beat_files)
-    ? data.beat_files
-    : data.beat_files
-      ? [data.beat_files]
-      : []
-  const beatFile = beatFiles[0] as
-    | { id: string; storage_path: string; bpm: number | null }
-    | undefined
+  const metadata = (data as any).metadata as Record<string, unknown> | null
+  const beatFileId = metadata?.beat_file_id as string | undefined
 
-  if (beatFile) {
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-      .from("beats")
-      .createSignedUrl(beatFile.storage_path, 3600)
+  if (beatFileId) {
+    const { data: bf, error: bfError } = await supabase
+      .from("beat_files")
+      .select("id, storage_path, bpm")
+      .eq("id", beatFileId)
+      .eq("user_id", userId)
+      .single()
 
-    if (signedUrlError) {
-      console.warn("Failed to create signed URL for beat:", signedUrlError.message)
-    }
+    if (bfError) {
+      console.warn("Failed to load beat file metadata:", bfError.message)
+    } else if (bf) {
+      // Guard storage_path which may be null in the DB type
+      let signedUrlData: any = undefined
+      let signedUrlError: any = undefined
+      if (bf.storage_path) {
+        const res = await supabase.storage.from("beats").createSignedUrl(bf.storage_path, 3600)
+        signedUrlData = res.data
+        signedUrlError = res.error
 
-    const fileName =
-      beatFile.storage_path.split("/").pop()?.replace(/^\d+-/, "") ?? ""
+        if (signedUrlError) {
+          console.warn("Failed to create signed URL for beat:", signedUrlError.message)
+        }
+      }
 
-    beat = {
-      beatFileId: beatFile.id,
-      beatStorageUrl: signedUrlData?.signedUrl ?? "",
-      bpm: beatFile.bpm,
-      fileName,
+      const fileName = bf.storage_path?.split("/").pop()?.replace(/^\d+-/, "") ?? ""
+
+      beat = {
+        beatFileId: bf.id,
+        beatStorageUrl: signedUrlData?.signedUrl ?? "",
+        bpm: bf.bpm,
+        fileName,
+      }
     }
   }
 

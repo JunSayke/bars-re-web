@@ -3,6 +3,8 @@ export const workspaceKeys = {
   sessions: () => ["sessions"] as const,
   session: (id: string) => [...workspaceKeys.all, "session", id] as const,
   draft: (id: string) => [...workspaceKeys.all, "draft", id] as const,
+  beatLibrary: () => [...workspaceKeys.all, "beatLibrary"] as const,
+  beatLibraryRecent: (limit: number) => [...workspaceKeys.beatLibrary(), "recent", limit] as const,
   beatLink: (sessionId: string) => [...workspaceKeys.all, "beatLink", sessionId] as const,
 }
 

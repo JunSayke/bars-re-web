@@ -11,19 +11,28 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://localhost:5
 
 // In-memory state for mutations
 let sessions: SessionSummary[] = [...mockSessions]
+// Store session metadata separately (sessions in fixtures are lightweight summaries)
+const sessionMetadata = new Map<string, any>()
+// Seed metadata for fixtures that are beat-linked
+sessionMetadata.set("session-002", { beat_link_id: "mock-link-1" })
+sessionMetadata.set("session-003", { beat_link_id: "mock-link-2" })
 
 // Helper: Convert mapped frontend summary back into a raw Supabase DB row
 function toSessionRow(summary: SessionSummary) {
-  return {
-    id: summary.id,
-    user_id: "mock-user-001",
-    title: summary.title,
-    topic: summary.topic,
-    bar_content: JSON.stringify([{ text: summary.previewSnippet }]),
-    last_modified_at: summary.lastModifiedAt,
-    beat_files: summary.thumbnailType === "beat-linked" ? [{ id: "mock-beat-1" }] : [],
+    const meta = sessionMetadata.get(summary.id) ?? (summary.thumbnailType === "beat-linked"
+      ? { beat_link_id: summary.id === "session-002" ? "mock-link-1" : summary.id === "session-003" ? "mock-link-2" : "mock-link-1" }
+      : {})
+    return {
+      id: summary.id,
+      user_id: "mock-user-001",
+      title: summary.title,
+      topic: summary.topic,
+      bar_content: JSON.stringify([{ text: summary.previewSnippet }]),
+      last_modified_at: summary.lastModifiedAt,
+      // Sessions now store beat references in a metadata jsonb column
+      metadata: meta,
+    }
   }
-}
 
 export const workspaceHandlers = [
   // GET /sessions (Handles both list and single lookups)
@@ -36,17 +45,7 @@ export const workspaceHandlers = [
         id: mockSession.id,
         title: mockSession.title,
         bar_content: JSON.stringify(mockSession.bars),
-        beat_files: mockSession.beat
-          ? [
-              {
-                id: mockSession.beat.beatFileId,
-                storage_path: "mock-path.mp3",
-                bpm: mockSession.beat.bpm,
-                file_size_bytes: 1024,
-                source_type: "upload",
-              },
-            ]
-          : [],
+        metadata: mockSession.beat ? { beat_file_id: mockSession.beat.beatFileId } : {},
       })
     }
 
@@ -65,6 +64,7 @@ export const workspaceHandlers = [
     const body = (await request.json()) as { title: string; topic?: string }
     const newSummary = buildMockSession({ title: body.title, topic: body.topic ?? "" })
     sessions.push(newSummary)
+    sessionMetadata.set(newSummary.id, {})
 
     const row = toSessionRow(newSummary)
     const wantsSingle = request.headers.get("Accept")?.includes("vnd.pgrst.object")
@@ -83,6 +83,12 @@ export const workspaceHandlers = [
     if (idx !== -1) {
       if (body.title !== undefined) sessions[idx].title = body.title
       if (body.topic !== undefined) sessions[idx].topic = body.topic
+      if (body.metadata !== undefined) {
+        sessionMetadata.set(sessions[idx].id, body.metadata)
+        // update thumbnailType for convenience in fixtures
+        const meta = body.metadata ?? {}
+        sessions[idx].thumbnailType = meta.beat_link_id || meta.beat_file_id ? "beat-linked" : "lyrics"
+      }
       sessions[idx].lastModifiedAt = new Date().toISOString()
     }
 
@@ -104,6 +110,7 @@ export const workspaceHandlers = [
     const id = idParam ? idParam.replace("eq.", "") : ""
 
     sessions = sessions.filter((s) => s.id !== id)
+    sessionMetadata.delete(id)
     return new HttpResponse(null, { status: 204 })
   }),
 
@@ -118,5 +125,34 @@ export const workspaceHandlers = [
       { signedUrl: "http://mock-signed-url.com/beat.mp3" },
       { status: 200 }
     )
+  }),
+
+  // RPC helpers: clear session metadata references when beats/links are deleted
+  http.post(`${SUPABASE_URL}/rpc/sessions_clear_beat_file_reference`, async ({ request }) => {
+    const body = (await request.json()) as { p_beat_file_id?: string }
+    const target = body.p_beat_file_id
+    if (!target) return new HttpResponse(null, { status: 204 })
+    for (const [sid, meta] of sessionMetadata.entries()) {
+      if (meta && meta.beat_file_id === target) {
+        const next = { ...meta }
+        delete next.beat_file_id
+        sessionMetadata.set(sid, next)
+      }
+    }
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.post(`${SUPABASE_URL}/rpc/sessions_clear_beat_link_reference`, async ({ request }) => {
+    const body = (await request.json()) as { p_beat_link_id?: string }
+    const target = body.p_beat_link_id
+    if (!target) return new HttpResponse(null, { status: 204 })
+    for (const [sid, meta] of sessionMetadata.entries()) {
+      if (meta && meta.beat_link_id === target) {
+        const next = { ...meta }
+        delete next.beat_link_id
+        sessionMetadata.set(sid, next)
+      }
+    }
+    return new HttpResponse(null, { status: 204 })
   }),
 ]

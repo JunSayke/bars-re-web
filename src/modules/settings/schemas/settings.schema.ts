@@ -12,6 +12,8 @@ export const profileSchema = z.object({
   avatarUrl: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  storageUsageBytes: z.number().int().nonnegative(),
+  storageLimitBytes: z.number().int().positive(),
 })
 
 export const updateProfilePayloadSchema = z.object({
