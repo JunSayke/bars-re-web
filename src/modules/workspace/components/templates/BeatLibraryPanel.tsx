@@ -205,7 +205,7 @@ export function BeatLibraryPanel({
         tags: musicTags || "drill, dark",
         lyrics: lyrics || "",
         dur: Math.round(durationMinutes * 60),
-        lang: "🇮🇩 Indonesian", // Accent similar to cebuano
+        lang: "🇵🇭 Cebuano", // Accent similar to cebuano
         ntracks: 1,
         think: true,
         seed: -1,
@@ -213,7 +213,7 @@ export function BeatLibraryPanel({
         key: "",
         ts: beatSignature ?? "",
         steps: 30,
-        guide: 8,
+        guide: 8.5,
         instrumental: instrumentalOnly,
       });
 
