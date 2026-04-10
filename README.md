@@ -1,65 +1,164 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bisaya AI Rap — Prototype README
 
-## Getting Started
+A web app for writing Bisaya rap bars. AI-assisted lyric editor with beat linking, verse snippet management, and a built-in Cebuano thesaurus.
 
-First, run the development server (this project prefers `pnpm` — see "Switching to pnpm" below):
+---
 
-```bash
-pnpm dev
-# or
-npm run dev
-# or
-yarn dev
-# or
-bun dev
+## Tech Stack
+
+| Layer | Technology | Version |
+|---|---|---|
+| Framework | Next.js (App Router) | 16.2.1 |
+| Runtime | React | 19.2.4 |
+| Language | TypeScript | ^5.9.3 |
+| Styling | Tailwind CSS | ^4.2.2 |
+| UI Components | shadcn/ui (new-york) + Radix UI | shadcn ^4.1.1 / radix-ui ^1.4.3 |
+| Server State | TanStack Query v5 | ^5.95.2 |
+| Forms | React Hook Form | ^7.72.0 |
+| Validation | Zod | ^4.3.6 |
+| Backend / Auth | Supabase (Auth · Postgres · Storage · Realtime) | supabase-js ^2.101.0 |
+| AI | Vercel AI SDK (Google Gemini + Groq fallback) | ai ^6.0.141 |
+| Thesaurus | @junsayke/cebuano-thesaurus (GitHub Packages) | ^1.3.1 |
+| API Mocking | MSW | ^2.12.14 |
+| Package Manager | pnpm | 10.26.1 |
+| Node.js | — | v20+ |
+
+---
+
+## Demo Accounts
+
+> These accounts are for the **local prototype** only. Register them manually via `/signup` after running `pnpm supabase db reset`, or add them through Supabase Studio at [http://localhost:54323](http://localhost:54323).
+
+This app has a single user type — all authenticated users have the same level of access.
+
+| # | Display Name | Email | Password |
+|---|---|---|---|
+| 1 | Demo User | `demo@bars.local` | `Demo1234!` |
+| 2 | Test Rapper | `rapper@bars.local` | `Rapper1234!` |
+
+> **Note:** No seed file is committed. Create these accounts manually through the signup page or Supabase Studio → Authentication → Users → Add User.
+
+---
+
+## Deployment Instructions
+
+### Option A — Local Development
+
+**Prerequisites:** Node.js v20+, pnpm v10+, Docker Desktop
+
+#### 1. Configure the private package registry
+
+The Cebuano thesaurus is hosted on GitHub Packages. Create a `.npmrc` file in the project root:
+
+```
+@junsayke:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=<your-github-pat>
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Auth pages are available at `/login` and `/signup` (they live under the `(auth)` route group).
+Generate a PAT at [GitHub → Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens) with the `read:packages` scope.
 
-Components follow Atomic Design under `src/components`:
-- `atoms/` — building blocks (Logo, Icon, Button, Input, Label, Divider)
-- `molecules/` — composed components (FormField, PasswordField, SocialButton)
-- `organisms/` — composed layouts (AuthForm, AuthAside)
+> `.npmrc` is gitignored — never commit it.
 
-Run `pnpm dev` and visit `/login` to see the new auth layout.
-
-Switching to pnpm
------------------
-
-This repository prefers `pnpm`. To switch locally:
-
-1. Install pnpm (via Corepack or npm):
+#### 2. Install dependencies
 
 ```bash
-corepack prepare pnpm@8 --activate
-# or
-npm i -g pnpm
-```
-
-2. Remove the npm lockfile (if present) and install with pnpm:
-
-```bash
-git rm --cached package-lock.json || true
 pnpm install
 ```
 
-This will create `pnpm-lock.yaml` and use pnpm's node_modules layout.
+#### 3. Start local Supabase
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Docker Desktop must be running.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm supabase start
+```
 
-## Learn More
+After startup, the CLI prints your local `API URL` and `anon key`. Copy them.
 
-To learn more about Next.js, take a look at the following resources:
+Apply all migrations:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm supabase db reset
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+#### 4. Set up environment variables
 
-## Deploy on Vercel
+```bash
+cp .env.example .env.local
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Edit `.env.local`:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```env
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key from supabase start>
+
+# Set to `enabled` to use MSW mocks instead of real Supabase calls
+NEXT_PUBLIC_API_MOCKING=disabled
+
+# AI feedback — at least one key required
+GOOGLE_GENERATIVE_AI_API_KEY=<from https://aistudio.google.com>
+GROQ_API_KEY=<from https://console.groq.com>
+```
+
+#### 5. Run the dev server
+
+```bash
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+| Route | Notes |
+|---|---|
+| `/login` | Sign in |
+| `/signup` | Register a new account |
+| `/workspaces` | Session list (requires login) |
+| `/workspaces/editor` | Bar editor (requires login) |
+| `/settings/profile` | Profile settings (requires login) |
+| Supabase Studio | [http://localhost:54323](http://localhost:54323) |
+
+---
+
+### Option B — Vercel Deployment
+
+#### 1. Connect the repo
+
+Push to GitHub and import the repo in your [Vercel dashboard](https://vercel.com/new).
+
+#### 2. Set environment variables in Vercel
+
+Go to **Project → Settings → Environment Variables** and add:
+
+| Variable | Value |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anon key |
+| `NEXT_PUBLIC_API_MOCKING` | `disabled` |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | (optional, recommended) |
+| `GROQ_API_KEY` | (optional, fallback AI) |
+
+> For the private package registry on Vercel, add `NPM_RC` as an environment variable containing the contents of your `.npmrc` file, or configure it in `vercel.json`.
+
+#### 3. Deploy
+
+```bash
+pnpm build   # Verify build locally first
+```
+
+Then push to your main branch — Vercel deploys automatically.
+
+---
+
+## Common Commands
+
+```bash
+pnpm dev                    # Start Next.js dev server (http://localhost:3000)
+pnpm build                  # Production build
+pnpm lint                   # Run ESLint
+
+pnpm supabase start         # Start local Supabase stack (requires Docker)
+pnpm supabase stop          # Stop local Supabase
+pnpm supabase db reset      # Re-apply all migrations
+pnpm supabase gen types typescript --local > src/shared/types/database.types.ts
+```
