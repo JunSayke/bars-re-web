@@ -7,6 +7,7 @@
 
 import { supabase } from "@/shared/config/supabase"
 import type { Database } from "@/shared/config/database.types"
+import { ACCOUNT_STORAGE_LIMIT_BYTES } from "@/shared/constants/storage"
 import type { Profile, UpdateProfilePayload } from "../types/settings.types"
 
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"]
@@ -21,6 +22,17 @@ async function getAuthUser() {
   return data.user
 }
 
+async function getStorageUsageBytes(userId: string): Promise<number> {
+  const { data, error } = await supabase
+    .from("beat_files")
+    .select("file_size_bytes")
+    .eq("user_id", userId)
+
+  if (error) throw error
+
+  return (data ?? []).reduce((total, row) => total + (row.file_size_bytes ?? 0), 0)
+}
+
 function toProfile(row: ProfileRow, email: string): Profile {
   return {
     id: row.id,
@@ -29,6 +41,8 @@ function toProfile(row: ProfileRow, email: string): Profile {
     avatarUrl: row.avatar_url,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    storageUsageBytes: 0,
+    storageLimitBytes: ACCOUNT_STORAGE_LIMIT_BYTES,
   }
 }
 
@@ -58,12 +72,16 @@ export async function getProfile(): Promise<Profile> {
 
     if (insertError) throw insertError
 
-    return toProfile(inserted as ProfileRow, email)
+    const profile = toProfile(inserted as ProfileRow, email)
+    profile.storageUsageBytes = await getStorageUsageBytes(authUser.id)
+    return profile
   }
 
   if (error) throw error
 
-  return toProfile(data as ProfileRow, email)
+  const profile = toProfile(data as ProfileRow, email)
+  profile.storageUsageBytes = await getStorageUsageBytes(authUser.id)
+  return profile
 }
 
 export async function updateProfile(

@@ -27,7 +27,7 @@ import { SnippetsPanel } from "./templates/SnippetsPanel"
 import { ThesaurusPanel } from "./templates/ThesaurusPanel"
 import { AiAssistantPanel } from "./templates/AiAssistantPanel"
 import { AiFeedbackView } from "./organisms/AiFeedbackView"
-import { BeatLinkPanel } from "./templates/BeatLinkPanel"
+import { BeatLibraryPanel } from "./templates/BeatLibraryPanel"
 
 function groupBars(bars: Bar[]): SectionData[] {
   const map = new Map<string, Bar[]>()
@@ -125,7 +125,11 @@ export function EditorPage() {
 
   const handleResizePointerDown = (dir: "left" | "right") =>
     (e: React.PointerEvent<HTMLDivElement>) => {
-      e.currentTarget.setPointerCapture(e.pointerId)
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId)
+      } catch (err) {
+        // ignore - some environments may throw if pointer capture isn't available
+      }
       const currentWidth = columnRef.current?.offsetWidth ?? 640
       columnResizeRef.current = { startX: e.clientX, startWidth: columnWidth ?? currentWidth, dir }
     }
@@ -138,7 +142,26 @@ export function EditorPage() {
     setColumnWidth(next)
   }
 
-  const handleResizePointerUp = () => {
+  const handleResizePointerUp = (e?: React.PointerEvent<HTMLDivElement>) => {
+    if (e) {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId)
+      } catch (err) {
+        // ignore
+      }
+    }
+    columnResizeRef.current = null
+  }
+
+  // Ensure pointercancel also clears state for column resize
+  const handleResizePointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e) {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId)
+      } catch (err) {
+        // ignore
+      }
+    }
     columnResizeRef.current = null
   }
 
@@ -158,7 +181,7 @@ export function EditorPage() {
   const [panelZIndexes, setPanelZIndexes] = useState<Record<string, number>>({
     snippets: 50,
     thesaurus: 51,
-    "beat-link": 52,
+    "beat-library": 52,
     "ai-assistant": 53,
   })
   const handlePanelActivate = (key: string) => {
@@ -510,6 +533,7 @@ export function EditorPage() {
             onPointerDown={handleResizePointerDown("left")}
             onPointerMove={handleResizePointerMove}
             onPointerUp={handleResizePointerUp}
+            onPointerCancel={handleResizePointerCancel}
             title="Drag to resize column width"
           >
             <div className="h-12 w-px rounded-full bg-border/60 group-hover:bg-primary/40 transition-colors" />
@@ -520,6 +544,7 @@ export function EditorPage() {
             onPointerDown={handleResizePointerDown("right")}
             onPointerMove={handleResizePointerMove}
             onPointerUp={handleResizePointerUp}
+            onPointerCancel={handleResizePointerCancel}
             title="Drag to resize column width"
           >
             <div className="h-12 w-px rounded-full bg-border/60 group-hover:bg-primary/40 transition-colors" />
@@ -585,12 +610,14 @@ export function EditorPage() {
         />
       )}
 
-      {openPanels.has("beat-link") && (
-        <BeatLinkPanel
+      {openPanels.has("beat-library") && (
+        <BeatLibraryPanel
           sessionId={sessionId}
-          onClose={() => handleTogglePanel("beat-link")}
-          onActivate={() => handlePanelActivate("beat-link")}
-          zIndex={panelZIndexes["beat-link"]}
+          onLoadBeat={beatPlayer.loadUrl}
+          onUploadBeatFile={beatPlayer.loadFile}
+          onClose={() => handleTogglePanel("beat-library")}
+          onActivate={() => handlePanelActivate("beat-library")}
+          zIndex={panelZIndexes["beat-library"]}
         />
       )}
 
