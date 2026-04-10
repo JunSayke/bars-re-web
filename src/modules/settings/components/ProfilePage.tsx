@@ -21,7 +21,10 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { Badge } from "@/components/ui/badge"
 import { ROUTES } from "@/shared/constants/routes"
+import { formatMegabytes } from "@/shared/constants/storage"
 
 export function ProfilePage() {
   const router = useRouter()
@@ -82,6 +85,10 @@ export function ProfilePage() {
   }
 
   const shell = "mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-10 py-10"
+  const storageUsageBytes = profile?.storageUsageBytes ?? 0
+  const storageLimitBytes = profile?.storageLimitBytes ?? 1
+  const storageUsagePercent = Math.min(100, Math.round((storageUsageBytes / storageLimitBytes) * 100))
+  const isStorageFull = storageUsageBytes >= storageLimitBytes
 
   if (isLoading) {
     return (
@@ -119,6 +126,40 @@ export function ProfilePage() {
         <h1 className="text-2xl font-bold tracking-tight">Profile Settings</h1>
         <p className="text-sm text-muted-foreground mt-1">Manage your display name and avatar.</p>
       </div>
+
+      <Card className="border-border/40 bg-card mb-6">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary/10 text-primary">
+              <Info className="size-4" />
+            </div>
+            <div>
+              <CardTitle className="text-base">Storage Capacity</CardTitle>
+              <CardDescription>Account storage limit is 100 MB for saved beat generations.</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-foreground">
+                {formatMegabytes(storageUsageBytes)} used of {formatMegabytes(storageLimitBytes)}
+              </p>
+              <Badge variant={isStorageFull ? "destructive" : "secondary"}>{storageUsagePercent}%</Badge>
+            </div>
+            <Progress value={storageUsagePercent} />
+            {isStorageFull ? (
+              <p className="text-xs text-destructive font-medium">
+                Storage is full. Free up space in your saved beats before generating new tracks.
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                When this reaches 100 MB, uploads are blocked until you free up storage.
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 

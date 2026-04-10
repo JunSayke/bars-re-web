@@ -46,22 +46,23 @@ export async function getSessions(): Promise<SessionSummary[]> {
 
   const { data, error } = await supabase
     .from("sessions")
-    .select("id, title, topic, bar_content, last_modified_at, beat_files(id)")
+    .select("id, title, topic, bar_content, last_modified_at, metadata")
     .eq("user_id", userId)
     .order("last_modified_at", { ascending: false })
 
   if (error) throw error
 
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    title: row.title ?? "",
-    topic: row.topic ?? "",
-    previewSnippet: toPreviewSnippet(row.bar_content),
-    thumbnailType: toThumbnailType(
-      Array.isArray(row.beat_files) && row.beat_files.length > 0
-    ),
-    lastModifiedAt: row.last_modified_at ?? "",
-  }))
+  return (data ?? []).map((row) => {
+    const meta = row.metadata as any
+    return {
+      id: row.id,
+      title: row.title ?? "",
+      topic: row.topic ?? "",
+      previewSnippet: toPreviewSnippet(row.bar_content),
+      thumbnailType: toThumbnailType(Boolean(meta && (meta.beat_link_id || meta.beat_file_id))),
+      lastModifiedAt: row.last_modified_at ?? "",
+    }
+  })
 }
 
 export async function createSession(
@@ -76,7 +77,7 @@ export async function createSession(
 
   if ((count ?? 0) >= 100) throw { message: "Session limit reached" }
 
-  const { data, error } = await supabase
+    const { data, error } = await supabase
     .from("sessions")
     .insert({
       title: payload.title,
@@ -84,21 +85,23 @@ export async function createSession(
       user_id: userId,
       bar_content: "",
       last_modified_at: new Date().toISOString(),
+      metadata: {},
     })
-    .select("id, title, topic, bar_content, last_modified_at, beat_files(id)")
+    .select("id, title, topic, bar_content, last_modified_at, metadata")
     .single()
 
   if (error) throw error
 
-  return {
-    id: data.id,
-    title: data.title ?? "",
-    topic: data.topic ?? "",
-    previewSnippet: toPreviewSnippet(data.bar_content),
-    thumbnailType: toThumbnailType(
-      Array.isArray(data.beat_files) && data.beat_files.length > 0
-    ),
-    lastModifiedAt: data.last_modified_at ?? "",
+  {
+    const meta = data.metadata as any
+    return {
+      id: data.id,
+      title: data.title ?? "",
+      topic: data.topic ?? "",
+      previewSnippet: toPreviewSnippet(data.bar_content),
+      thumbnailType: toThumbnailType(Boolean(meta && (meta.beat_link_id || meta.beat_file_id))),
+      lastModifiedAt: data.last_modified_at ?? "",
+    }
   }
 }
 
@@ -113,20 +116,21 @@ export async function renameSession(
     .update({ title, last_modified_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId)
-    .select("id, title, topic, bar_content, last_modified_at, beat_files(id)")
+    .select("id, title, topic, bar_content, last_modified_at, metadata")
     .single()
 
   if (error) throw error
 
-  return {
-    id: data.id,
-    title: data.title ?? "",
-    topic: data.topic ?? "",
-    previewSnippet: toPreviewSnippet(data.bar_content),
-    thumbnailType: toThumbnailType(
-      Array.isArray(data.beat_files) && data.beat_files.length > 0
-    ),
-    lastModifiedAt: data.last_modified_at ?? "",
+  {
+    const meta = data.metadata as any
+    return {
+      id: data.id,
+      title: data.title ?? "",
+      topic: data.topic ?? "",
+      previewSnippet: toPreviewSnippet(data.bar_content),
+      thumbnailType: toThumbnailType(Boolean(meta && (meta.beat_link_id || meta.beat_file_id))),
+      lastModifiedAt: data.last_modified_at ?? "",
+    }
   }
 }
 
@@ -141,19 +145,18 @@ export async function updateSessionTopic(
     .update({ topic, last_modified_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId)
-    .select("id, title, topic, bar_content, last_modified_at, beat_files(id)")
+    .select("id, title, topic, bar_content, last_modified_at, metadata")
     .single()
 
   if (error) throw error
 
+  const meta = data.metadata as any
   return {
     id: data.id,
     title: data.title ?? "",
     topic: data.topic ?? "",
     previewSnippet: toPreviewSnippet(data.bar_content),
-    thumbnailType: toThumbnailType(
-      Array.isArray(data.beat_files) && data.beat_files.length > 0
-    ),
+    thumbnailType: toThumbnailType(Boolean(meta && (meta.beat_link_id || meta.beat_file_id))),
     lastModifiedAt: data.last_modified_at ?? "",
   }
 }

@@ -11,6 +11,7 @@ export function useImportBeatMutation(sessionId: string) {
     mutationFn: (file: File) => uploadBeat(sessionId, file),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: workspaceKeys.session(sessionId) })
+      void queryClient.invalidateQueries({ queryKey: workspaceKeys.beatLibrary() })
     },
   })
 

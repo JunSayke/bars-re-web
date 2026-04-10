@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button"
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -28,16 +26,12 @@ export function DeleteSessionDialog({ open, onClose, onConfirm }: DeleteSessionD
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel asChild>
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-          </AlertDialogCancel>
-          <AlertDialogAction asChild>
-            <Button variant="destructive" onClick={onConfirm}>
-              Delete
-            </Button>
-          </AlertDialogAction>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="destructive" onClick={onConfirm}>
+            Delete
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

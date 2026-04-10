@@ -112,8 +112,8 @@ export function useBeatPlayer(sessionId: string): UseBeatPlayerReturn {
         onSuccess: (record) => {
           setState((prev) => ({ ...prev, bpm: record.bpm, fileName: record.fileName }))
         },
-        onError: () => {
-          toast.error("Failed to upload beat. Please try again.")
+        onError: (error) => {
+          toast.error(error.message || "Failed to upload beat. Please try again.")
           setState((prev) => ({ ...prev, fileName: null, bpm: null, isLoadingAudio: false }))
         },
       })

@@ -36,70 +36,66 @@ export type Database = {
     Tables: {
       beat_files: {
         Row: {
+          beat_name: string | null
           bpm: number | null
+          created_at: string
           file_size_bytes: number | null
           id: string
-          session_id: string
           source_type: string | null
           storage_path: string | null
+          user_id: string | null
         }
         Insert: {
+          beat_name?: string | null
           bpm?: number | null
+          created_at?: string
           file_size_bytes?: number | null
           id?: string
-          session_id: string
           source_type?: string | null
           storage_path?: string | null
+          user_id?: string | null
         }
         Update: {
+          beat_name?: string | null
           bpm?: number | null
+          created_at?: string
           file_size_bytes?: number | null
           id?: string
-          session_id?: string
           source_type?: string | null
           storage_path?: string | null
+          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "beat_files_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "sessions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       beat_links: {
         Row: {
+          beat_name: string | null
           bpm: number | null
+          created_at: string
           id: string
           provider: string
-          session_id: string
           url: string
+          user_id: string | null
         }
         Insert: {
+          beat_name?: string | null
           bpm?: number | null
+          created_at?: string
           id?: string
           provider?: string
-          session_id: string
           url: string
+          user_id?: string | null
         }
         Update: {
+          beat_name?: string | null
           bpm?: number | null
+          created_at?: string
           id?: string
           provider?: string
-          session_id?: string
           url?: string
+          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "beat_links_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "sessions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -132,6 +128,7 @@ export type Database = {
           editor_zoom: number | null
           id: string
           last_modified_at: string | null
+          metadata: Json | null
           title: string | null
           topic: string | null
           user_id: string
@@ -142,6 +139,7 @@ export type Database = {
           editor_zoom?: number | null
           id?: string
           last_modified_at?: string | null
+          metadata?: Json | null
           title?: string | null
           topic?: string | null
           user_id: string
@@ -152,6 +150,7 @@ export type Database = {
           editor_zoom?: number | null
           id?: string
           last_modified_at?: string | null
+          metadata?: Json | null
           title?: string | null
           topic?: string | null
           user_id?: string
@@ -193,7 +192,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      beat_name_from_storage_path: { Args: { path: string }; Returns: string }
+      sessions_clear_beat_file_reference: {
+        Args: { p_beat_file_id: string }
+        Returns: undefined
+      }
+      sessions_clear_beat_link_reference: {
+        Args: { p_beat_link_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

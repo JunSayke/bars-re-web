@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@gradio/client": "^2.1.0",
     "@ai-sdk/google": "^3.0.54",
     "@ai-sdk/groq": "^3.0.31",
     "@hookform/resolvers": "^5.2.2",
